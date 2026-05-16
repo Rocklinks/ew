@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--R:#FF0000;--RD:#CC0000;--RL:#FF0000;--W:#fff;--BG:#F3F4F6;--TX:#111827;--MU:#6B7280;--BD:#E5E7EB}
@@ -145,7 +146,8 @@ tr:hover td{background:#FFF5F5!important}
   </div>
   <div class="btn-wrap">
     <button class="btn btn-p" id="gb" onclick="generate()" disabled>Generate</button>
-    <button class="btn btn-o" id="eb" onclick="exportExcel()">⬇ Export Excel</button>
+    <button class="btn btn-o" id="eb" onclick="exportExcel()" style="display:none">⬇ Save XLSX</button>
+    <button class="btn btn-o" id="db" onclick="downloadDashboard()" style="display:none">📥 DD</button>
   </div>
 </div>
 
@@ -154,7 +156,7 @@ tr:hover td{background:#FFF5F5!important}
   <div class="ph">
     <svg width="52" height="52" viewBox="0 0 64 64" fill="none" style="margin-bottom:12px;opacity:.2"><rect x="8" y="8" width="48" height="48" rx="6" stroke="#FF0000" stroke-width="3"/><path d="M20 32h24M20 22h24M20 42h16" stroke="#FF0000" stroke-width="2.5" stroke-linecap="round"/></svg>
     <h2>Upload both files to begin</h2>
-    <p>File names don't matter —  roles assigned as per the uploaded file</p>
+    <p>File names don't matter — assign roles when prompted</p>
   </div>
 </div>
 
@@ -308,6 +310,7 @@ function render(data,branches){
   </div>`;
 
   document.getElementById('eb').style.display='inline-block';
+  document.getElementById('db').style.display='inline-block';
   setTimeout(()=>drawCharts(data,branches,bk),50);
 }
 
@@ -510,6 +513,63 @@ function sw(id,el){
 }
 
 /* ── EXCEL EXPORT using xlsx-js-style (supports cell styles) ── */
+function downloadDashboard(){
+  const db=document.getElementById('db');
+  db.textContent='⏳ Rendering…';db.disabled=true;
+
+  // Ensure dash is visible for html2canvas
+  const dash=document.getElementById('p-dash');
+  const prevActive=document.querySelector('.panel.active');
+  const prevTab=document.querySelector('.tab.active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  dash.classList.add('active');
+
+  // Wait for paint then capture
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const W=dash.scrollWidth,H=dash.scrollHeight;
+    const scale=3;
+    const out=document.createElement('canvas');
+    out.width=W*scale;out.height=H*scale;
+    const ctx=out.getContext('2d');
+    ctx.scale(scale,scale);
+    ctx.fillStyle='#F3F4F6';
+    ctx.fillRect(0,0,W,H);
+
+    // Use html2canvas with allowTaint to handle chart canvases
+    html2canvas(dash,{
+      scale,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:'#F3F4F6',
+      logging:false,
+      onclone:(doc)=>{
+        // Make sure all canvases in clone are visible
+        doc.querySelectorAll('canvas').forEach(c=>{c.style.display='block'});
+      }
+    }).then(canvas=>{
+      canvas.toBlob(blob=>{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='Dashboard_UltraHD.png';
+        document.body.appendChild(a);a.click();
+        setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
+        db.textContent='📥 DD';db.disabled=false;
+        // Restore previous tab
+        if(prevActive)prevActive.classList.add('active');
+        if(prevTab)prevTab.classList.add('active');
+        dash.classList.remove('active');
+      },'image/png',1.0);
+    }).catch(e=>{
+      console.error(e);
+      db.textContent='📥 DD';db.disabled=false;
+      alert('Error: '+e.message);
+      if(prevActive)prevActive.classList.add('active');
+      if(prevTab)prevTab.classList.add('active');
+    });
+  }));
+}
+
 function exportExcel(){
   if(!S.report)return;
   const{data,branches}=S.report;
