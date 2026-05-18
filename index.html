@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Warranty Report</title>
+<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -11,7 +12,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--R:#FF0000;--RD:#CC0000;--RL:#FF0000;--W:#fff;--BG:#F3F4F6;--TX:#111827;--MU:#6B7280;--BD:#E5E7EB}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--BG);color:var(--TX);font-size:13px;min-height:100vh}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--BG);color:var(--TX);font-size:13px;min-height:100vh;font-weight:500}
 
 /* HEADER */
 header{background:var(--W);border-bottom:3px solid var(--R);padding:0 16px;display:flex;align-items:center;gap:10px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -57,38 +58,38 @@ input[type=file]{display:none}
 .panel{display:none}.panel.active{display:block}
 
 /* KPI */
-.krow{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px}
-.kpi{background:var(--W);border-top:3px solid var(--R);padding:10px 12px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.kpi .v{font-size:1.15rem;font-weight:700;color:var(--R);line-height:1.2}
-.kpi .l{font-size:.6rem;text-transform:uppercase;letter-spacing:.8px;color:var(--MU);margin-top:2px}
+.krow{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--W);border-top:4px solid #FF0000;padding:12px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.kpi .v{font-size:1.3rem;font-weight:800;color:#FF0000;line-height:1.2}
+.kpi .l{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#444;margin-top:4px}
 
 /* Branch cards */
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .bcard{background:var(--W);border-radius:7px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .bch{background:var(--R);color:#fff;padding:7px 12px;display:flex;justify-content:space-between;align-items:center}
-.bch span{font-size:.83rem;font-weight:700}
-.bch small{font-size:.62rem;background:rgba(255,255,255,.2);padding:1px 7px;border-radius:10px}
+.bch span{font-size:.88rem;font-weight:800}
+.bch small{font-size:.65rem;background:rgba(255,255,255,.2);padding:1px 7px;border-radius:10px;font-weight:700}
 .bcb{padding:8px 12px}
-.bcs{display:flex;justify-content:space-between;font-size:.74rem;padding:3px 0;border-bottom:1px solid #F3F4F6}
-.bcs:last-child{border:none;font-weight:600}
+.bcs{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid #F3F4F6;font-weight:600;color:#111}
+.bcs:last-child{border:none;font-weight:800}
 .rl{color:var(--RL);font-weight:700}
 /* CHARTS */
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .chart-row.single{grid-template-columns:1fr}
-.cbox{background:var(--W);border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
-.cbox h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--MU);margin-bottom:12px}
-.cbox canvas{max-height:260px}
+.cbox{background:var(--W);border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.1);border:1px solid #E5E7EB}
+.cbox h3{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#222;margin-bottom:14px;border-bottom:2px solid #FF0000;padding-bottom:6px}
+.cbox canvas{max-height:280px}
 @media(max-width:640px){.chart-row{grid-template-columns:1fr}}
 
 /* TABLES — exact image style */
 .tw{overflow-x:auto;border-radius:0 0 6px 6px;border:1px solid var(--BD)}
-table{border-collapse:collapse;width:100%;font-size:.78rem;background:#fff}
-th{background:var(--R);color:#fff;padding:7px 9px;text-align:center;font-weight:700;white-space:nowrap;border:1px solid #CC0000}
+table{border-collapse:collapse;width:100%;font-size:.78rem;background:#fff;border:2px solid #D1D5DB}
+th{background:#FF0000;color:#fff;padding:7px 9px;text-align:center;font-weight:700;white-space:nowrap;border:1px solid #CC0000}
 th.l{text-align:left}
 td{padding:5px 9px;border:1px solid #D1D5DB;color:#000;background:#fff;white-space:nowrap}
 td.r{text-align:right}
 tr:hover td{background:#FFF5F5!important}
-.tfoot td{background:var(--R)!important;font-weight:700;border:1px solid #CC0000!important}
+.tfoot td{background:#FF0000!important;color:#fff!important;font-weight:700;border:1px solid #CC0000!important}
 
 .bsec{margin-bottom:20px}
 .bhdr{background:var(--R);color:#fff;padding:7px 12px;font-size:.85rem;font-weight:700;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center}
@@ -156,7 +157,7 @@ tr:hover td{background:#FFF5F5!important}
   <div class="ph">
     <svg width="52" height="52" viewBox="0 0 64 64" fill="none" style="margin-bottom:12px;opacity:.2"><rect x="8" y="8" width="48" height="48" rx="6" stroke="#FF0000" stroke-width="3"/><path d="M20 32h24M20 22h24M20 42h16" stroke="#FF0000" stroke-width="2.5" stroke-linecap="round"/></svg>
     <h2>Upload both files to begin</h2>
-    <p>File names don't matter </p>
+    <p>File names don't matter — assign roles when prompted</p>
   </div>
 </div>
 
@@ -209,14 +210,36 @@ function doGenerate(){
     const hS=findHdr(S.sales),hW=findHdr(S.warr);
     const wm={};
     for(let i=hW+1;i<S.warr.length;i++){const r=S.warr[i],e=String(r[0]||'').trim();if(e)wm[e]=parseFloat(r[2])||0}
+    // Branch prefix map — first part of employee code maps to branch
+    const PREFIX_BR={
+      'ASM':'Ambasamudram','ARM':'Anjugramam','TCN':'Thiruchendur','TVL':'Tirunelveli',
+      'NGR':'Nagercoil','KVT':'Kovilpatti','TUT':'Tuticorin','RND':'Ramnad',
+      'SVK':'Sankarankovil','MAR':'Marthandam','APK':'Aruppukottai','VNR':'Virudhunagar',
+      'KGL':'Karungal','TCL':'Thuckalay','KLK':'Kulasekharam','COL':'Colachel',
+      'MND':'Monday Market','ERL':'Eral','UDK':'Udankudi','KYT':'Kayathar',
+      'PMD':'Paramakudi','SYK':'Sayalkudi','VLK':'Villathikullam','STR':'Sattur',
+      'TNK':'Thenkasi','SRD':'Surandai','PLK':'Puliyankudi','SNG':'Sengottai',
+      'RJP':'Rajapalayam','SVS':'Sivakasi','TKS':'Thenkasi','VLR':'Valliyur',
+      'TCS':'Thiruchendur'
+    };
+    function prefixOk(emp,br){
+      // Extract prefix: chars before first digit
+      const m=emp.match(/^([A-Za-z]+)\d/);
+      if(!m)return true; // no prefix pattern, allow
+      const pfx=m[1].toUpperCase();
+      const mapped=PREFIX_BR[pfx];
+      if(!mapped)return true; // unknown prefix, allow
+      return br.toLowerCase().startsWith(mapped.toLowerCase().slice(0,4));
+    }
+
     const data=[];
     for(let i=hS+1;i<S.sales.length;i++){
       const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
       const sp=parseFloat(r[2])||0;
       let br='';
       if(r[18]&&String(r[18]).trim())br=String(r[18]).trim();
-      else for(let c=r.length-1;c>=3;c--)if(r[c]&&String(r[c]).trim()){br=String(r[c]).trim();break}
       if(!br)continue;
+      if(!prefixOk(emp,br))continue; // skip mismatched employees
       const ew=wm[emp]!==undefined?wm[emp]:0;
       data.push({emp,sp,br,ew,pct:sp>0?ew/sp:0});
     }
@@ -257,7 +280,7 @@ function render(data,branches){
       <div class="kpi"><div class="v" style="color:#FF0000">${b3}</div><div class="l">Below ${(S.thresh*100).toFixed(1)}%</div></div>
     </div>
     <div class="chart-row">
-      <div class="cbox"><h3>AGM-wise Sales (₹L) & EW%</h3><canvas id="ch2a"></canvas></div>
+      <div class="cbox"><h3>AGM-wise Sales (₹) & EW%</h3><canvas id="ch2a"></canvas></div>
       <div class="cbox"><h3>AGM-wise EW% Comparison</h3><canvas id="ch2b"></canvas></div>
     </div>
     <div class="chart-row">
@@ -319,6 +342,15 @@ function drawCharts(data,branches,bk){
   _charts.forEach(c=>c.destroy());_charts=[];
   Chart.register(ChartDataLabels);
 
+  // ── Global bold defaults for ALL charts ──
+  Chart.defaults.font.weight='700';
+  Chart.defaults.font.size=11;
+  Chart.defaults.color='#111';
+  Chart.defaults.plugins.legend.labels.font={size:11,weight:'700'};
+  Chart.defaults.plugins.legend.labels.color='#111';
+  Chart.defaults.plugins.tooltip.titleFont={size:12,weight:'700'};
+  Chart.defaults.plugins.tooltip.bodyFont={size:11,weight:'600'};
+
   // AGM mapping — fuzzy match branch names
   const AGM_MAP={
     'SIVA':['tuticorin-1','tuticorin-2','tuticorin1','tuticorin2','thiruchendur','thisayanvilai','eral','udankudi','udangudi'],
@@ -356,7 +388,9 @@ function drawCharts(data,branches,bk){
   });
 
   const RED='#FF0000',RED60='rgba(255,0,0,0.7)',GRAY='rgba(100,116,139,0.55)';
-  const baseOpt={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},datalabels:{display:false}}};
+  const baseOpt={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{x:{ticks:{font:{size:12,weight:'800'},color:'#111'},grid:{color:'#F3F4F6'}},
+            y:{ticks:{font:{size:12,weight:'800'},color:'#111'},grid:{color:'#F3F4F6'}}}};
 
   // ── Chart 2a: AGM-wise Sales & EW grouped bar (raw ₹ Indian format) ──
   _charts.push(new Chart(document.getElementById('ch2a'),{
@@ -372,7 +406,7 @@ function drawCharts(data,branches,bk){
           datalabels:{
             display:true,anchor:'end',align:'top',
             formatter:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},
-            color:'#333',font:{size:8,weight:'700'}
+            color:'#333',font:{size:11,weight:'800'}
           }
         },
         {
@@ -383,7 +417,7 @@ function drawCharts(data,branches,bk){
           datalabels:{
             display:true,anchor:'end',align:'top',
             formatter:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},
-            color:'#111',font:{size:8,weight:'700'}
+            color:'#111',font:{size:11,weight:'800'}
           }
         }
       ]
@@ -392,11 +426,11 @@ function drawCharts(data,branches,bk){
       responsive:true,maintainAspectRatio:true,
       layout:{padding:{top:35}},
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:9,weight:'600'}}},
-        y:{grid:{color:'#F3F4F6'},ticks:{callback:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},font:{size:8}}}
+        x:{grid:{display:false},ticks:{font:{size:11,weight:'800'}}},
+        y:{grid:{color:'#F3F4F6'},ticks:{callback:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},font:{size:12,weight:'800'}}}
       },
       plugins:{
-        legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:12,padding:10}},
+        legend:{display:true,position:'bottom',labels:{font:{size:12,weight:'800'},boxWidth:12,padding:10}},
         tooltip:{callbacks:{label:ctx=>{const v=ctx.raw,s=Math.abs(v).toString();return`${ctx.dataset.label}: ₹`+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))}}},
         datalabels:{}
       }
@@ -419,7 +453,7 @@ function drawCharts(data,branches,bk){
       layout:{padding:{right:50}},
       scales:{
         x:{display:false},
-        y:{grid:{display:false},ticks:{font:{size:10,weight:'700'}}}
+        y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}
       },
       plugins:{...baseOpt.plugins,
         tooltip:{callbacks:{label:ctx=>`EW%: ${ctx.raw}%`}}
@@ -440,12 +474,12 @@ function drawCharts(data,branches,bk){
         data:top5.map(s=>+(s.pct*100).toFixed(2)),
         backgroundColor:top5.map(s=>AGM_COLORS[s.agm]||GRAY),
         borderRadius:5,
-        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:10,weight:'700'}}
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:12,weight:'800'}}
       }]
     },
     options:{...baseOpt,indexAxis:'y',
       layout:{padding:{right:45}},
-      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:12,weight:'800'}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}},
       plugins:{...baseOpt.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — AGM ${top5[ctx.dataIndex].agm}`}}}
     }
   }));
@@ -459,12 +493,12 @@ function drawCharts(data,branches,bk){
         data:bot5.map(s=>+(s.pct*100).toFixed(2)),
         backgroundColor:bStats.map(s=>s.pct<S.thresh?RED60:GRAY),
         borderRadius:5,
-        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:10,weight:'700'}}
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:12,weight:'800'}}
       }]
     },
     options:{...baseOpt,indexAxis:'y',
       layout:{padding:{right:45}},
-      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:12,weight:'800'}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}},
       plugins:{...baseOpt.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — AGM ${bot5[ctx.dataIndex].agm}`}}}
     }
   }));
@@ -482,7 +516,7 @@ function drawCharts(data,branches,bk){
         datalabels:{
           display:true,anchor:'end',align:'right',
           formatter:v=>v+'%',
-          color:'#111',font:{size:9,weight:'700'}
+          color:'#111',font:{size:11,weight:'800'}
         }
       }]
     },
@@ -490,12 +524,12 @@ function drawCharts(data,branches,bk){
       layout:{padding:{right:50}},
       scales:{
         x:{display:false},
-        y:{grid:{display:false},ticks:{font:{size:9,weight:'500'},mirror:false}}
+        y:{grid:{display:false},ticks:{font:{size:12,weight:'800'},color:'#111',mirror:false}}
       },
       plugins:{
         legend:{display:true,labels:{
-          generateLabels:()=>agms.map(a=>({text:'AGM '+a,fillStyle:AGM_COLORS[a],strokeStyle:AGM_COLORS[a],lineWidth:0})),
-          font:{size:10},boxWidth:12,padding:10
+          generateLabels:()=>agms.map(a=>({text:'AGM '+a,fillStyle:AGM_COLORS[a],strokeStyle:AGM_COLORS[a],lineWidth:0,fontColor:'#111'})),
+          font:{size:12,weight:'800'},color:'#111',boxWidth:14,padding:12
         }},
         tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — AGM ${allSorted[ctx.dataIndex].agm}`}},
         datalabels:{}
@@ -517,57 +551,59 @@ function downloadDashboard(){
   const db=document.getElementById('db');
   db.textContent='⏳ Rendering…';db.disabled=true;
 
-  // Ensure dash is visible for html2canvas
   const dash=document.getElementById('p-dash');
-  const prevActive=document.querySelector('.panel.active');
-  const prevTab=document.querySelector('.tab.active');
+  const prevPanels=[...document.querySelectorAll('.panel.active')];
+  const prevTabs=[...document.querySelectorAll('.tab.active')];
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   dash.classList.add('active');
+  dash.style.minWidth='1400px';
 
-  // Wait for paint then capture
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const W=dash.scrollWidth,H=dash.scrollHeight;
-    const scale=3;
-    const out=document.createElement('canvas');
-    out.width=W*scale;out.height=H*scale;
-    const ctx=out.getContext('2d');
-    ctx.scale(scale,scale);
-    ctx.fillStyle='#F3F4F6';
-    ctx.fillRect(0,0,W,H);
+  // Redraw all charts at high DPR before capture
+  const HD=4;
+  _charts.forEach(c=>{
+    c.options.devicePixelRatio=HD;
+    c.resize();
+    c.draw();
+  });
 
-    // Use html2canvas with allowTaint to handle chart canvases
+  setTimeout(()=>{
     html2canvas(dash,{
-      scale,
+      scale:HD,
       useCORS:true,
       allowTaint:true,
       backgroundColor:'#F3F4F6',
       logging:false,
-      onclone:(doc)=>{
-        // Make sure all canvases in clone are visible
-        doc.querySelectorAll('canvas').forEach(c=>{c.style.display='block'});
-      }
+      scrollX:0,scrollY:0,
+      windowWidth:dash.scrollWidth,
+      width:dash.scrollWidth,
+      height:dash.scrollHeight
     }).then(canvas=>{
       canvas.toBlob(blob=>{
         const url=URL.createObjectURL(blob);
         const a=document.createElement('a');
-        a.href=url;a.download='Dashboard_UltraHD.png';
+        a.href=url;a.download='Warranty_Dashboard_UHD.png';
         document.body.appendChild(a);a.click();
         setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
+
+        // Restore
+        dash.style.minWidth='';
+        _charts.forEach(c=>{c.options.devicePixelRatio=window.devicePixelRatio||2;c.resize()});
+        prevPanels.forEach(p=>p.classList.add('active'));
+        prevTabs.forEach(t=>t.classList.add('active'));
+        if(!prevPanels.length){dash.classList.add('active')}
+        else{dash.classList.remove('active')}
         db.textContent='📥 DD';db.disabled=false;
-        // Restore previous tab
-        if(prevActive)prevActive.classList.add('active');
-        if(prevTab)prevTab.classList.add('active');
-        dash.classList.remove('active');
       },'image/png',1.0);
     }).catch(e=>{
       console.error(e);
+      dash.style.minWidth='';
+      prevPanels.forEach(p=>p.classList.add('active'));
+      prevTabs.forEach(t=>t.classList.add('active'));
       db.textContent='📥 DD';db.disabled=false;
       alert('Error: '+e.message);
-      if(prevActive)prevActive.classList.add('active');
-      if(prevTab)prevTab.classList.add('active');
     });
-  }));
+  },800);
 }
 
 function exportExcel(){
