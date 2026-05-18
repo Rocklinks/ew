@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Warranty Report</title>
-<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -610,12 +609,14 @@ function exportExcel(){
   if(!S.report)return;
   const{data,branches}=S.report;
   const wb={SheetNames:[],Sheets:{}};
-  const R='FFFF0000',RL='FFFF0000',W='FFFFFFFF',K='FF000000',B='FFD0D0D0',RB='FFCC0000';
+  const R='FFFF0000',RL='FFFF0000',W='FFFFFFFF',K='FF000000',B='FF000000',RB='FFCC0000';
   const bt=c=>({style:'thin',color:{rgb:c}});
-  const hdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',wrapText:false},border:{top:bt(RB),bottom:bt(RB),left:bt(RB),right:bt(RB)}});
+  const btM=c=>({style:'medium',color:{rgb:c}});
+  const hdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',wrapText:false},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
+  const colHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:14},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',vertical:'center',wrapText:false},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
   const dat=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'center',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
   const datL=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'left',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
-  const tot=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',vertical:'center'},border:{top:bt(RB),bottom:bt(RB),left:bt(RB),right:bt(RB)}});
+  const tot=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',vertical:'center'},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
   const N=v=>({v:Math.round(v),t:'n',z:'#,##0'});
   const P=v=>({v:v,t:'n',z:'0.00%'});
 
@@ -646,22 +647,23 @@ function exportExcel(){
 
   // ── Sheet 2: Branch Wise ──
   const bk=Object.keys(branches).sort();
-  const s2rows=[];const merges=[];let ri=0;
+  const s2rows=[];const merges=[];const rowHeights=[];let ri=0;
   bk.forEach(b=>{
     const br=branches[b],bSP=br.reduce((s,r)=>s+r.sp,0),bEW=br.reduce((s,r)=>s+r.ew,0);
     merges.push({s:{r:ri,c:0},e:{r:ri,c:3}});
-    s2rows.push([cell(b,hdr()),cell('',{}),cell('',{}),cell('',{})]);ri++;
-    s2rows.push([cell('Sales Employee',hdr()),cell('Sales Price',hdr()),cell('EW',hdr()),cell('%',hdr())]);ri++;
+    s2rows.push([cell(b,hdr()),cell('',{}),cell('',{}),cell('',{})]);rowHeights.push({hpx:20});ri++;
+    s2rows.push([cell('Sales Employee',colHdr()),cell('Sales Price',colHdr()),cell('EW',colHdr()),cell('%',colHdr())]);rowHeights.push({hpx:28});ri++;
     br.forEach(r=>{
       const red=r.pct<S.thresh;
-      s2rows.push([cell(r.emp,datL(false)),cell(N(r.sp),dat(false)),cell(N(r.ew),dat(false)),cell(P(r.pct),dat(red))]);ri++;
+      s2rows.push([cell(r.emp,datL(false)),cell(N(r.sp),dat(false)),cell(N(r.ew),dat(false)),cell(P(r.pct),dat(red))]);rowHeights.push({hpx:18});ri++;
     });
-    s2rows.push([cell('TOTAL',tot()),cell(N(bSP),tot()),cell(N(bEW),tot()),cell(P(bSP>0?bEW/bSP:0),tot())]);ri++;
-    s2rows.push([cell('',{}),cell('',{}),cell('',{}),cell('',{})]);ri++;
+    s2rows.push([cell('TOTAL',colHdr()),cell(N(bSP),colHdr()),cell(N(bEW),colHdr()),cell(P(bSP>0?bEW/bSP:0),colHdr())]);rowHeights.push({hpx:28});ri++;
+    s2rows.push([cell('',{}),cell('',{}),cell('',{}),cell('',{})]);rowHeights.push({hpx:8});ri++;
   });
   const ws2=buildWS(s2rows,4);
   ws2['!cols']=[{wch:40},{wch:16},{wch:12},{wch:9}];
   ws2['!merges']=merges;
+  ws2['!rows']=rowHeights;
   wb.SheetNames.push('Branch Wise');wb.Sheets['Branch Wise']=ws2;
 
   XLSX.writeFile(wb,'Warranty_Report.xlsx');
