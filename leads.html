@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en" style="image-rendering:high-quality">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Region-wise Lead Management Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+:root{--bg:#f0eff8;--card:#fff;--bdr:#e4e2f0;--txt:#1e1b3a;--txt2:#6b6890;
+  --c1:#5046e5;--c2:#0ea5e9;--c3:#10b981;--c4:#f59e0b;--c5:#ef4444;--c6:#8b5cf6;}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
+#upScr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0eff8,#e8e6f8);z-index:99}
+.upbox{background:#fff;border:2px dashed #c8c5e8;border-radius:24px;padding:52px 68px;text-align:center;max-width:440px;width:100%;box-shadow:0 8px 40px rgba(80,70,229,.1);transition:all .2s}
+.upbox:hover,.upbox.drag{border-color:var(--c1)}
+.up-ico{width:54px;height:54px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.up-ico svg{width:24px;height:24px;stroke:var(--c1);fill:none;stroke-width:2}
+.upbox h2{font-size:20px;font-weight:800;margin-bottom:8px}
+.upbox p{color:var(--txt2);font-size:13px;margin-bottom:20px;line-height:1.7}
+.upbtn{background:var(--c1);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.upbtn:hover{opacity:.9}
+.upnote{font-size:11px;color:#a8a6c0;margin-top:10px}
+#fi{display:none}
+#dScr{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden}
+.nav{background:#1c1917;padding:9px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav h1{font-size:14px;font-weight:800;color:#fff}
+.nav p{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.9px;text-transform:uppercase;margin-top:1px}
+.dtag{font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);padding:4px 10px;border-radius:20px}
+.rebtn{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:5px 11px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:8px}
+.savebtn{background:var(--c1);color:#fff;border:none;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:6px}
+.dash{flex:1;display:grid;grid-template-columns:196px 1fr;overflow:hidden}
+.sidebar{background:#ffffff;border-right:1px solid var(--bdr);display:flex;flex-direction:column;padding:10px 9px;gap:7px;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1}
+.kcard{border-radius:10px;padding:11px 13px;position:relative;flex-shrink:0;border:1px solid var(--bdr);min-height:82px;background:#fff}
+.kcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);border-radius:3px 0 0 3px}
+.klbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--c);margin-bottom:5px;padding-left:8px;display:block}
+.kval{font-family:'Inter',sans-serif;font-size:22px;font-weight:900;line-height:1;padding-left:8px;color:#1e1b3a;display:block}
+.ksub{font-size:10px;color:#374151;margin-top:4px;padding-left:8px;font-weight:600;display:block}
+.kbadge{display:inline-block;font-size:9px;font-weight:800;padding:2px 9px;border-radius:20px;margin-top:6px;margin-left:8px}
+.grn{background:#dcfce7;color:#15803d}.amb{background:#fef3c7;color:#92400e}
+.stl{font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#6b6890;padding:6px 4px 4px;border-top:1px solid var(--bdr);margin-top:2px}
+.pmini{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.pm{border-radius:8px;padding:7px 9px;border:1px solid #e4e2f0;background:#ffffff;border-top:3px solid var(--c)}
+.pm-name{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--c);margin-bottom:2px}
+.pm-val{font-size:16px;font-weight:900;line-height:1;color:#1e1b3a}
+.pm-sub{font-size:9px;color:#1e1b3a;margin-top:3px;font-weight:700}
+.content{display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.row{display:grid;gap:8px;flex:1;min-height:0}
+.r3{grid-template-columns:1fr 1fr 1fr}
+.r5{grid-template-columns:repeat(5,1fr)}
+.crd{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 4px rgba(80,70,229,.04)}
+.ch{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:6px}
+.ctitle{font-size:11px;font-weight:800;color:var(--txt)}
+.ctag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--txt2);border:1px solid var(--bdr)}
+.cw{flex:1;position:relative;min-height:0}
+.cw canvas{position:absolute;inset:0}
+</style>
+</head>
+<body>
+<div id="upScr">
+  <div class="upbox" id="dz">
+    <div class="up-ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+    <h2>Region-wise Lead Management Dashboard</h2>
+    <p>Upload your Excel file to generate the AGM region-wise performance dashboard.</p>
+    <button class="upbtn" id="pickBtn">Choose Excel File</button>
+    <div class="upnote">Sheets: Monthly · Daily · AC · LED · MOBILE · FRIDGE · WM</div>
+  </div>
+  <input type="file" id="fi" accept=".xlsx,.xls">
+</div>
+<div id="dScr">
+  <div class="nav">
+    <div><h1>Region-wise Lead Management Dashboard</h1><p id="nsub">Region: AGM</p></div>
+    <div style="display:flex;align-items:center">
+      <span class="dtag" id="dtag">—</span>
+      <button class="rebtn" id="reBtn">↑ New File</button>
+      <button class="savebtn" id="dlBtn">💾 Save</button>
+    </div>
+  </div>
+  <div class="dash">
+    <div class="sidebar">
+      <div class="kcard" style="--c:var(--c1);background:linear-gradient(135deg,#faf9ff,#f0eefe)">
+        <div class="klbl">Monthly Leads</div>
+        <div class="kval" id="k1">—</div>
+        <div class="ksub">Won: <b id="k1w" style="color:var(--c3)">—</b></div>
+        <span class="kbadge amb" id="k1r">—</span>
+      </div>
+      <div class="kcard" style="--c:var(--c2);background:linear-gradient(135deg,#f0f9ff,#e0f2fe)">
+        <div class="klbl">Today's Leads</div>
+        <div class="kval" id="k2">—</div>
+        <div class="ksub">Won: <b id="k2w" style="color:var(--c3)">—</b> · Open: <b id="k2o">—</b></div>
+        <span class="kbadge grn" id="k2r">—</span>
+      </div>
+      <div class="stl">Product Summary</div>
+      <div class="pmini" id="pmini"></div>
+    </div>
+    <div class="content">
+      <div class="row r3">
+        <div class="crd"><div class="ch"><span class="ctitle">Monthly Leads &amp; Won — by Region</span><span class="ctag" style="color:var(--c1)">Grouped Bar</span></div><div class="cw"><canvas id="cM"></canvas></div></div>
+        <div class="crd"><div class="ch"><span class="ctitle">Daily Leads &amp; Won — by Region</span><span class="ctag" style="color:var(--c2)">Horizontal Bar</span></div><div class="cw"><canvas id="cD"></canvas></div></div>
+        <div class="crd"><div class="ch"><span class="ctitle">Win Rate by Region</span><span class="ctag" style="color:var(--c3)">Radar</span></div><div class="cw"><canvas id="cR"></canvas></div></div>
+      </div>
+      <div class="row r5" id="prodRow"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var REGS=['VNR1','NGR1','KVT1','TKS1','Tuticorin','Tirunelveli'];
+  var PRODS=[
+    {k:'AC', n:'AC',    c:'#5046e5',t:'bar'},
+    {k:'LED',n:'LED',   c:'#0ea5e9',t:'line'},
+    {k:'MOB',n:'MOBILE',c:'#10b981',t:'bar'},
+    {k:'FR', n:'FRIDGE',c:'#f59e0b',t:'line'},
+    {k:'WM', n:'WM',    c:'#ef4444',t:'bar'}
+  ];
+  var DATA=null, CI={};
+
+  document.getElementById('pickBtn').addEventListener('click',function(){document.getElementById('fi').click();});
+  document.getElementById('fi').addEventListener('change',function(){if(this.files[0])readFile(this.files[0]);});
+  document.getElementById('reBtn').addEventListener('click',function(){
+    document.getElementById('dScr').style.display='none';
+    document.getElementById('upScr').style.display='flex';
+    document.getElementById('fi').value='';
+  });
+  var dz=document.getElementById('dz');
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});
+  dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0]);});
+
+  document.getElementById('dlBtn').addEventListener('click',function(){
+    var btn=document.getElementById('dlBtn');
+    btn.textContent='Saving...'; btn.disabled=true;
+
+    function doCapture(){
+      var dScr=document.getElementById('dScr');
+      var SCALE=6; // 6x = ultra HD (e.g. 1920px screen → 11520px wide PNG)
+
+      // Step 1: Resize every Chart.js canvas to 6x pixel ratio before capture
+      var chartCanvases=dScr.querySelectorAll('canvas');
+      var origSizes=[];
+      chartCanvases.forEach(function(cv){
+        origSizes.push({w:cv.style.width,h:cv.style.height,pw:cv.width,ph:cv.height});
+      });
+
+      // Step 2: Capture with html2canvas at scale 6
+      html2canvas(dScr,{
+        scale:SCALE,
+        useCORS:true,
+        allowTaint:true,
+        backgroundColor:'#f0eff8',
+        logging:false,
+        imageTimeout:0,
+        removeContainer:true,
+        foreignObjectRendering:false,
+        windowWidth:dScr.scrollWidth,
+        windowHeight:dScr.scrollHeight,
+        x:0,y:0,scrollX:0,scrollY:0,
+        onclone:function(doc){
+          // In cloned doc force all text to be crisp
+          var style=doc.createElement('style');
+          style.innerHTML='*{-webkit-font-smoothing:antialiased!important;text-rendering:optimizeLegibility!important;}';
+          doc.head.appendChild(style);
+          // Redraw all charts in clone at high DPI
+          doc.querySelectorAll('canvas').forEach(function(cv){
+            cv.style.imageRendering='pixelated';
+          });
+        }
+      }).then(function(canvas){
+        // Step 3: Upscale output canvas 2x more via second canvas for extra sharpness
+        var final=document.createElement('canvas');
+        final.width=canvas.width;
+        final.height=canvas.height;
+        var fc=final.getContext('2d');
+        fc.imageSmoothingEnabled=true;
+        fc.imageSmoothingQuality='high';
+        fc.drawImage(canvas,0,0);
+
+        final.toBlob(function(blob){
+          var url=URL.createObjectURL(blob);
+          var a=document.createElement('a');
+          a.href=url; a.download='Dashboard_UHD.png';
+          document.body.appendChild(a); a.click();
+          document.body.removeChild(a);
+          setTimeout(function(){URL.revokeObjectURL(url);},3000);
+          btn.textContent='💾 Save'; btn.disabled=false;
+        },'image/png',1.0);
+      }).catch(function(e){
+        alert('Save failed: '+e.message);
+        btn.textContent='💾 Save'; btn.disabled=false;
+      });
+    }
+
+    if(typeof html2canvas==='undefined'){
+      var s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=function(){setTimeout(doCapture,300);};
+      s.onerror=function(){alert('Could not load capture library.');btn.textContent='💾 Save';btn.disabled=false;};
+      document.head.appendChild(s);
+    } else {
+      setTimeout(doCapture,200);
+    }
+  });;;
+
+  function readFile(file){
+    var r=new FileReader();
+    r.onload=function(ev){
+      try{
+        var wb=XLSX.read(ev.target.result,{type:'array'});
+        var map={Monthly:'M',Daily:'D',AC:'AC',LED:'LED',MOBILE:'MOB',FRIDGE:'FR',WM:'WM'};
+        var nd={};
+        for(var sn in map){
+          var ws=wb.Sheets[sn]; if(!ws){alert('Missing: '+sn);return;}
+          var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+          var hi=0;
+          for(var i=0;i<rows.length;i++){var s=String(rows[i][0]||'').toLowerCase();if(s.indexOf('branch')>-1||s.indexOf('region')>-1){hi=i;break;}}
+          var b=[],l=[],w=[];
+          for(var j=hi+1;j<rows.length;j++){
+            var row=rows[j],br=String(row[0]||'').trim();
+            if(REGS.indexOf(br)<0)continue;
+            b.push(br);l.push(parseFloat(row[1])||0);w.push(parseFloat(row[3])||0);
+          }
+          nd[map[sn]]={b:b,l:l,w:w};
+        }
+        DATA=nd;
+        document.getElementById('dtag').textContent=file.name.replace(/\.[^.]+$/,'').slice(0,22);
+        document.getElementById('nsub').textContent='Region: AGM · '+nd.M.b.length+' Regions';
+        document.getElementById('upScr').style.display='none';
+        document.getElementById('dScr').style.display='flex';
+        render();
+      }catch(err){alert('Error: '+err.message);}
+    };
+    r.readAsArrayBuffer(file);
+  }
+
+  Chart.defaults.font.family='Inter';
+  Chart.defaults.devicePixelRatio = Math.max(window.devicePixelRatio||1, 3);
+  function dc(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
+  function sum(a){return a.reduce(function(x,y){return x+y;},0);}
+  function pct(w,l){return l>0?Math.round(w/l*100):0;}
+  var TT={backgroundColor:'#fff',borderColor:'#e4e2f0',borderWidth:1,titleColor:'#1e1b3a',bodyColor:'#6b6890',padding:10,cornerRadius:8};
+  var AX={grid:{display:false},ticks:{color:'#1e1b3a',font:{size:9,weight:'800'}},border:{color:'#e4e2f0'}};
+  var AY={beginAtZero:true,grid:{color:'#f4f3fc'},ticks:{color:'#6b6890',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}};
+  var AXS={grid:{display:false},ticks:{color:'#1e1b3a',font:{size:8,weight:'800'}},border:{color:'#e4e2f0'}};
+
+  function pillPlugin(leads,won,col){
+    var fsz=9,ph=fsz+6,pad=5;
+    return {id:'pill',afterDraw:function(chart){
+      var ctx=chart.ctx,m0=chart.getDatasetMeta(0),m1=chart.getDatasetMeta(1);
+      leads.forEach(function(lv,i){
+        var wv=won[i],p=pct(wv,lv),b0=m0.data[i],b1=m1.data[i];
+        if(!b0||!b1)return;
+        var lbl0=String(lv);
+        ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
+        var tw0=ctx.measureText(lbl0).width,pw0=tw0+pad*2,rx0=b0.x-pw0/2,ry0=b0.y-ph-3;
+        ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.fill();
+        ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.stroke();
+        ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(lbl0,b0.x,ry0+ph/2); ctx.restore();
+        var lbl1=wv+' ('+p+'%)';
+        ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
+        var tw1=ctx.measureText(lbl1).width,pw1=tw1+pad*2,rx1=b1.x-pw1/2,ry1=b1.y-ph-3;
+        ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect(rx1,ry1,pw1,ph,3); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(lbl1,b1.x,ry1+ph/2); ctx.restore();
+      });
+    }};
+  }
+
+  function rotLeg(labels,bgCols,txCols){
+    return {id:'rl',afterDraw:function(chart){
+      var ctx=chart.ctx,cw=chart.width,ch=chart.height;
+      var fsz=9,bw=10,bh=10,gap=6,mg=8,tot=labels.length*(bh+gap)-gap,sy=(ch-tot)/2;
+      labels.forEach(function(lb,i){
+        ctx.save();
+        ctx.fillStyle=bgCols[i]; ctx.strokeStyle=txCols[i]; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.roundRect(cw-mg-bw,sy+i*(bh+gap),bw,bh,2); ctx.fill(); ctx.stroke();
+        ctx.translate(cw-mg-bw-5,sy+i*(bh+gap)+bh/2); ctx.rotate(-Math.PI/2);
+        ctx.font='800 '+fsz+'px Inter,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3; ctx.lineJoin='round';
+        ctx.strokeText(lb,0,0); ctx.fillStyle=txCols[i]; ctx.fillText(lb,0,0);
+        ctx.restore();
+      });
+    }};
+  }
+
+  function makeMonthly(regs,leads,won){
+    dc('cM');
+    CI['cM']=new Chart(document.getElementById('cM'),{type:'bar',
+      data:{labels:regs,datasets:[
+        {label:'Leads',data:leads,backgroundColor:'rgba(80,70,229,0.18)',borderColor:'#5046e5',borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:'#5046e5',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.y;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
+        scales:{x:AX,y:AY}},
+      plugins:[pillPlugin(leads,won,'#5046e5'),rotLeg(['Leads','Won'],['rgba(80,70,229,0.18)','#5046e5'],['#5046e5','#5046e5'])]
+    });
+  }
+
+  function makeDaily(regs,leads,won){
+    dc('cD');
+    CI['cD']=new Chart(document.getElementById('cD'),{type:'bar',
+      data:{labels:regs,datasets:[
+        {label:'Leads',data:leads,backgroundColor:'rgba(14,165,233,0.18)',borderColor:'#0ea5e9',borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:'#0ea5e9',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',layout:{padding:{right:80}},
+        plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.x;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
+        scales:{
+          x:{beginAtZero:true,grid:{color:'#f4f3fc'},ticks:{color:'#6b6890',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}},
+          y:{grid:{display:false},ticks:{color:'#1e1b3a',font:{size:9,weight:'800'}},border:{color:'#e4e2f0'}}
+        }},
+      plugins:[{id:'hp',afterDraw:function(chart){
+        var ctx=chart.ctx,m0=chart.getDatasetMeta(0),m1=chart.getDatasetMeta(1);
+        var fsz=8,ph=fsz+5,pad=4;
+        leads.forEach(function(lv,i){
+          var wv=won[i],p=pct(wv,lv),b0=m0.data[i],b1=m1.data[i];
+          if(!b0||!b1)return;
+          var lbl0=String(lv);
+          ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
+          var tw0=ctx.measureText(lbl0).width,pw0=tw0+pad*2,rx0=Math.max(b0.x,b0.base)+4,ry0=b0.y-ph/2;
+          ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.fill();
+          ctx.strokeStyle='#0ea5e9'; ctx.lineWidth=1; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.stroke();
+          ctx.fillStyle='#0ea5e9'; ctx.textAlign='left'; ctx.textBaseline='middle';
+          ctx.fillText(lbl0,rx0+pad,ry0+ph/2); ctx.restore();
+          var lbl1=wv+' ('+p+'%)';
+          ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
+          var tw1=ctx.measureText(lbl1).width,pw1=tw1+pad*2,rx1=Math.max(b1.x,b1.base)+4,ry1=b1.y-ph/2;
+          ctx.fillStyle='#0ea5e9'; ctx.beginPath(); ctx.roundRect(rx1,ry1,pw1,ph,3); ctx.fill();
+          ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='middle';
+          ctx.fillText(lbl1,rx1+pad,ry1+ph/2); ctx.restore();
+        });
+      }},rotLeg(['Leads','Won'],['rgba(14,165,233,0.18)','#0ea5e9'],['#0ea5e9','#0ea5e9'])]
+    });
+  }
+
+  function makeRadar(regs,mL,mW,dL,dW){
+    dc('cR');
+    var mR=mL.map(function(l,i){return pct(mW[i],l);}),dR=dL.map(function(l,i){return pct(dW[i],l);});
+    CI['cR']=new Chart(document.getElementById('cR'),{type:'radar',
+      data:{labels:regs,datasets:[
+        {label:'Monthly %',data:mR,backgroundColor:'rgba(80,70,229,.12)',borderColor:'#5046e5',pointBackgroundColor:'#5046e5',pointRadius:4,borderWidth:2},
+        {label:'Daily %',  data:dR,backgroundColor:'rgba(14,165,233,.12)',borderColor:'#0ea5e9',pointBackgroundColor:'#0ea5e9',pointRadius:4,borderWidth:2}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{color:'#1e1b3a',boxWidth:9,boxHeight:9,padding:10,font:{size:9,weight:'800'}}},tooltip:{...TT}},
+        scales:{r:{min:50,max:105,grid:{color:'#f0eff8'},angleLines:{color:'#e4e2f0'},
+          ticks:{color:'#6b6890',backdropColor:'transparent',font:{size:8,weight:'700'},stepSize:10},
+          pointLabels:{color:'#1e1b3a',font:{size:10,weight:'800'}}}}},
+      plugins:[{id:'rl2',afterDraw:function(chart){
+        var ctx=chart.ctx,dCols=['#5046e5','#0ea5e9'],vOff=[-12,8];
+        chart.data.datasets.forEach(function(ds,di){
+          chart.getDatasetMeta(di).data.forEach(function(pt,i){
+            var v=ds.data[i]; if(v==null)return;
+            var cx=chart.scales.r.xCenter,cy=chart.scales.r.yCenter;
+            var dx=pt.x-cx,dy=pt.y-cy,len=Math.sqrt(dx*dx+dy*dy)||1;
+            var tx=pt.x+dx/len*16,ty=pt.y+dy/len*16+vOff[di];
+            ctx.save(); ctx.font='700 9px Inter,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            var tw=ctx.measureText(v+'%').width;
+            ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fillRect(tx-tw/2-3,ty-7,tw+6,14);
+            ctx.fillStyle=dCols[di]; ctx.fillText(v+'%',tx,ty); ctx.restore();
+          });
+        });
+      }}]
+    });
+  }
+
+  function makeProdBar(id,regs,leads,won,color){
+    dc(id); var ctx=document.getElementById(id); if(!ctx)return;
+    CI[id]=new Chart(ctx,{type:'bar',
+      data:{labels:regs,datasets:[
+        {label:'Leads',data:leads,backgroundColor:color+'28',borderColor:color,borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:color,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:26}},
+        plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.y;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
+        scales:{x:AXS,y:AY}},
+      plugins:[pillPlugin(leads,won,color)]
+    });
+  }
+
+  function makeProdLine(id,regs,leads,won,color){
+    dc(id); var ctx=document.getElementById(id); if(!ctx)return;
+    CI[id]=new Chart(ctx,{type:'line',
+      data:{labels:regs,datasets:[
+        {label:'Leads',data:leads,backgroundColor:color+'18',borderColor:color,borderWidth:2,fill:true,tension:.4,pointBackgroundColor:color,pointRadius:5,pointHoverRadius:7},
+        {label:'Won',  data:won,  backgroundColor:color+'35',borderColor:color+'99',borderWidth:2,borderDash:[5,3],fill:true,tension:.4,pointBackgroundColor:color+'aa',pointRadius:4,pointHoverRadius:6}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{color:'#1e1b3a',boxWidth:8,boxHeight:8,padding:6,font:{size:8,weight:'800'}}},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.y;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
+        scales:{x:AXS,y:AY}},
+      plugins:[{id:'ll',afterDraw:function(chart){
+        var ctx2=chart.ctx,dCols=[color,'#374151'],yOff=[-14,6];
+        chart.data.datasets.forEach(function(ds,di){
+          chart.getDatasetMeta(di).data.forEach(function(pt,i){
+            var v=ds.data[i]; if(v==null)return;
+            var label=di===1?v+' ('+pct(won[i],leads[i])+'%)':String(v);
+            ctx2.save(); ctx2.font='700 8px Inter,sans-serif'; ctx2.textAlign='center'; ctx2.textBaseline='middle';
+            var tx=pt.x,ty=pt.y+yOff[di],tw=ctx2.measureText(label).width;
+            ctx2.fillStyle='rgba(255,255,255,0.9)'; ctx2.fillRect(tx-tw/2-3,ty-6,tw+6,13);
+            ctx2.fillStyle=dCols[di]; ctx2.fillText(label,tx,ty); ctx2.restore();
+          });
+        });
+      }}]
+    });
+  }
+
+  function render(){
+    var M=DATA.M,D=DATA.D;
+    var ml=sum(M.l),mw=sum(M.w),dl=sum(D.l),dw=sum(D.w);
+    document.getElementById('k1').textContent=ml.toLocaleString();
+    document.getElementById('k1w').textContent=mw.toLocaleString();
+    document.getElementById('k1r').textContent=(mw/ml*100).toFixed(1)+'% Win Rate';
+    document.getElementById('k2').textContent=dl.toLocaleString();
+    document.getElementById('k2w').textContent=dw.toLocaleString();
+    document.getElementById('k2o').textContent=dl-dw;
+    document.getElementById('k2r').textContent=(dw/dl*100).toFixed(1)+'% Win Rate';
+    var pm=document.getElementById('pmini');
+    pm.innerHTML=PRODS.map(function(p){
+      var pd=DATA[p.k],tl=sum(pd.l),tw=sum(pd.w);
+      return '<div class="pm" style="--c:'+p.c+'"><div class="pm-name">'+p.n+'</div><div class="pm-val">'+tl.toLocaleString()+'</div><div class="pm-sub"><b style="color:'+p.c+'">'+tw.toLocaleString()+'</b> · '+(tw/tl*100).toFixed(0)+'%</div></div>';
+    }).join('');
+    makeMonthly(M.b,M.l,M.w);
+    makeDaily(D.b,D.l,D.w);
+    makeRadar(M.b,M.l,M.w,D.l,D.w);
+    var pr=document.getElementById('prodRow');
+    pr.innerHTML=PRODS.map(function(p){
+      return '<div class="crd"><div class="ch"><span class="ctitle" style="color:'+p.c+'">'+p.n+'</span><span class="ctag" style="color:'+p.c+';border-color:'+p.c+'33;background:'+p.c+'0f">'+(p.t==='line'?'Line':'Bar')+'</span></div><div class="cw"><canvas id="pc_'+p.k+'"></canvas></div></div>';
+    }).join('');
+    setTimeout(function(){
+      PRODS.forEach(function(p){
+        var pd=DATA[p.k];
+        if(p.t==='line') makeProdLine('pc_'+p.k,pd.b,pd.l,pd.w,p.c);
+        else             makeProdBar ('pc_'+p.k,pd.b,pd.l,pd.w,p.c);
+      });
+    },60);
+  }
+})();
+</script>
+</body>
+</html>
