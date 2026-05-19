@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" style="image-rendering:high-quality">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Region-wise Lead Management Dashboard</title>
-<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-:root{--bg:#f0eff8;--card:#fff;--bdr:#e4e2f0;--txt:#1e1b3a;--txt2:#6b6890;
-  --c1:#5046e5;--c2:#0ea5e9;--c3:#10b981;--c4:#f59e0b;--c5:#ef4444;--c6:#8b5cf6;}
+:root{--bg:#f5f4ff;--card:#fff;--bdr:#d1cef5;--txt:#0f0d2a;--txt2:#4a4770;
+  --c1:#4338f5;--c2:#0090d4;--c3:#00a86b;--c4:#e88c00;--c5:#e52222;--c6:#7c3aed;}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
-#upScr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0eff8,#e8e6f8);z-index:99}
+#upScr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eeeaff,#ddd8fe);z-index:99;padding-top:54px}
 .upbox{background:#fff;border:2px dashed #c8c5e8;border-radius:24px;padding:52px 68px;text-align:center;max-width:440px;width:100%;box-shadow:0 8px 40px rgba(80,70,229,.1);transition:all .2s}
 .upbox:hover,.upbox.drag{border-color:var(--c1)}
 .up-ico{width:54px;height:54px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
@@ -57,23 +57,20 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
 .cw{flex:1;position:relative;min-height:0}
 .cw canvas{position:absolute;inset:0}
 </style>
-    <nav>
-    <a href="index.html">Home</a>
-    <a href="leads.html" class="active">Leads</a>
-    <a href="rev.html">Reviews</a>
-  </nav>
 </head>
 <body>
-    <header>
-  <div class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h13" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
-  <h1>Leads Report</h1>
-<nav style="display:flex;gap:4px;margin-left:18px">
-  <a href="index.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;">Home</a>
-  <a href="leads.html"class="active" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Leads</a>
-  <a href="rev.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Reviews</a>
-</nav>
-</header>
 <div id="upScr">
+  <div style="position:fixed;top:0;left:0;right:0;background:#1c1917;padding:9px 20px;display:flex;align-items:center;justify-content:space-between;z-index:100">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff">Region-wise Lead Management Dashboard</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.9px;text-transform:uppercase;margin-top:1px">Region: AGM</div>
+    </div>
+    <nav style="display:flex;gap:4px">
+      <a href="index.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;">Home</a>
+      <a href="leads.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Leads</a>
+      <a href="rev.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Reviews</a>
+    </nav>
+  </div>
   <div class="upbox" id="dz">
     <div class="up-ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
     <h2>Region-wise Lead Management Dashboard</h2>
@@ -86,7 +83,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
 <div id="dScr">
   <div class="nav">
     <div><h1>Region-wise Lead Management Dashboard</h1><p id="nsub">Region: AGM</p></div>
-    <div style="display:flex;align-items:center">
+    <div style="display:flex;align-items:center;gap:12px">
+      <nav style="display:flex;gap:4px">
+        <a href="index.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;">Home</a>
+        <a href="leads.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Leads</a>
+        <a href="rev.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;border:1px solid rgba(255,255,255,.5)">Reviews</a>
+      </nav>
       <span class="dtag" id="dtag">—</span>
       <button class="rebtn" id="reBtn">↑ New File</button>
       <button class="savebtn" id="dlBtn">💾 Save</button>
@@ -94,13 +96,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
   </div>
   <div class="dash">
     <div class="sidebar">
-      <div class="kcard" style="--c:var(--c1);background:linear-gradient(135deg,#faf9ff,#f0eefe)">
+      <div class="kcard" style="--c:var(--c1);background:linear-gradient(135deg,#eeecff,#ddd8fe)">
         <div class="klbl">Monthly Leads</div>
         <div class="kval" id="k1">—</div>
         <div class="ksub">Won: <b id="k1w" style="color:var(--c3)">—</b></div>
         <span class="kbadge amb" id="k1r">—</span>
       </div>
-      <div class="kcard" style="--c:var(--c2);background:linear-gradient(135deg,#f0f9ff,#e0f2fe)">
+      <div class="kcard" style="--c:var(--c2);background:linear-gradient(135deg,#dff4ff,#bae6fd)">
         <div class="klbl">Today's Leads</div>
         <div class="kval" id="k2">—</div>
         <div class="ksub">Won: <b id="k2w" style="color:var(--c3)">—</b> · Open: <b id="k2o">—</b></div>
@@ -163,7 +165,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
         scale:SCALE,
         useCORS:true,
         allowTaint:true,
-        backgroundColor:'#f0eff8',
+        backgroundColor:'#f5f4ff',
         logging:false,
         imageTimeout:0,
         removeContainer:true,
@@ -255,7 +257,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
   function pct(w,l){return l>0?Math.round(w/l*100):0;}
   var TT={backgroundColor:'#fff',borderColor:'#e4e2f0',borderWidth:1,titleColor:'#1e1b3a',bodyColor:'#6b6890',padding:10,cornerRadius:8};
   var AX={grid:{display:false},ticks:{color:'#1e1b3a',font:{size:9,weight:'800'}},border:{color:'#e4e2f0'}};
-  var AY={beginAtZero:true,grid:{color:'#f4f3fc'},ticks:{color:'#6b6890',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}};
+  var AY={beginAtZero:true,grid:{color:'#e8e5ff'},ticks:{color:'#4a4770',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}};
   var AXS={grid:{display:false},ticks:{color:'#1e1b3a',font:{size:8,weight:'800'}},border:{color:'#e4e2f0'}};
 
   function pillPlugin(leads,won,col){
@@ -267,16 +269,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
         if(!b0||!b1)return;
         var lbl0=String(lv);
         ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
-        var tw0=ctx.measureText(lbl0).width,pw0=tw0+pad*2,rx0=b0.x-pw0/2,ry0=b0.y-ph-3;
-        ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.fill();
-        ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.stroke();
+        var tw0=ctx.measureText(lbl0).width,pw0=tw0+pad*2;
+        // Leads pill: above its OWN bar, elevated by ph+5 extra so won pill has room
+        var rx0=b0.x-pw0/2, ry0=b0.y-ph-6;
+        ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.fill();
+        ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(rx0,ry0,pw0,ph,3); ctx.stroke();
         ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle';
         ctx.fillText(lbl0,b0.x,ry0+ph/2); ctx.restore();
+        // Won pill: above its OWN bar — b1.x is different from b0.x so no X overlap
         var lbl1=wv+' ('+p+'%)';
         ctx.save(); ctx.font='700 '+fsz+'px Inter,sans-serif';
-        var tw1=ctx.measureText(lbl1).width,pw1=tw1+pad*2,rx1=b1.x-pw1/2,ry1=b1.y-ph-3;
+        var tw1=ctx.measureText(lbl1).width,pw1=tw1+pad*2;
+        var rx1=b1.x-pw1/2, ry1=b1.y-ph-6;
         ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect(rx1,ry1,pw1,ph,3); ctx.fill();
         ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        // white stroke for clarity on colored bg
+        ctx.lineWidth=2.5; ctx.strokeStyle='rgba(255,255,255,0.25)';
+        ctx.strokeText(lbl1,b1.x,ry1+ph/2);
         ctx.fillText(lbl1,b1.x,ry1+ph/2); ctx.restore();
       });
     }};
@@ -285,7 +294,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
   function rotLeg(labels,bgCols,txCols){
     return {id:'rl',afterDraw:function(chart){
       var ctx=chart.ctx,cw=chart.width,ch=chart.height;
-      var fsz=9,bw=10,bh=10,gap=6,mg=8,tot=labels.length*(bh+gap)-gap,sy=(ch-tot)/2;
+      var fsz=10,bw=12,bh=12,gap=8,mg=10,tot=labels.length*(bh+gap)-gap,sy=(ch-tot)/2;
       labels.forEach(function(lb,i){
         ctx.save();
         ctx.fillStyle=bgCols[i]; ctx.strokeStyle=txCols[i]; ctx.lineWidth=1;
@@ -303,10 +312,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
     dc('cM');
     CI['cM']=new Chart(document.getElementById('cM'),{type:'bar',
       data:{labels:regs,datasets:[
-        {label:'Leads',data:leads,backgroundColor:'rgba(80,70,229,0.18)',borderColor:'#5046e5',borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
-        {label:'Won',  data:won,  backgroundColor:'#5046e5',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+        {label:'Leads',data:leads,backgroundColor:'rgba(67,56,245,0.35)',borderColor:'#4338f5',borderWidth:2,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:'#4338f5',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
         plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.y;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
         scales:{x:AX,y:AY}},
       plugins:[pillPlugin(leads,won,'#5046e5'),rotLeg(['Leads','Won'],['rgba(80,70,229,0.18)','#5046e5'],['#5046e5','#5046e5'])]
@@ -317,13 +326,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
     dc('cD');
     CI['cD']=new Chart(document.getElementById('cD'),{type:'bar',
       data:{labels:regs,datasets:[
-        {label:'Leads',data:leads,backgroundColor:'rgba(14,165,233,0.18)',borderColor:'#0ea5e9',borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
-        {label:'Won',  data:won,  backgroundColor:'#0ea5e9',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+        {label:'Leads',data:leads,backgroundColor:'rgba(0,144,212,0.35)',borderColor:'#0090d4',borderWidth:2,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:'#0090d4',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
       ]},
       options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',layout:{padding:{right:80}},
         plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.x;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
         scales:{
-          x:{beginAtZero:true,grid:{color:'#f4f3fc'},ticks:{color:'#6b6890',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}},
+          x:{beginAtZero:true,grid:{color:'#e8e5ff'},ticks:{color:'#4a4770',font:{size:8,weight:'700'}},border:{color:'#e4e2f0'}},
           y:{grid:{display:false},ticks:{color:'#1e1b3a',font:{size:9,weight:'800'}},border:{color:'#e4e2f0'}}
         }},
       plugins:[{id:'hp',afterDraw:function(chart){
@@ -355,12 +364,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
     var mR=mL.map(function(l,i){return pct(mW[i],l);}),dR=dL.map(function(l,i){return pct(dW[i],l);});
     CI['cR']=new Chart(document.getElementById('cR'),{type:'radar',
       data:{labels:regs,datasets:[
-        {label:'Monthly %',data:mR,backgroundColor:'rgba(80,70,229,.12)',borderColor:'#5046e5',pointBackgroundColor:'#5046e5',pointRadius:4,borderWidth:2},
-        {label:'Daily %',  data:dR,backgroundColor:'rgba(14,165,233,.12)',borderColor:'#0ea5e9',pointBackgroundColor:'#0ea5e9',pointRadius:4,borderWidth:2}
+        {label:'Monthly %',data:mR,backgroundColor:'rgba(67,56,245,.18)',borderColor:'#4338f5',pointBackgroundColor:'#4338f5',pointRadius:4,borderWidth:2},
+        {label:'Daily %',  data:dR,backgroundColor:'rgba(0,144,212,.18)',borderColor:'#0090d4',pointBackgroundColor:'#0090d4',pointRadius:4,borderWidth:2}
       ]},
       options:{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'top',labels:{color:'#1e1b3a',boxWidth:9,boxHeight:9,padding:10,font:{size:9,weight:'800'}}},tooltip:{...TT}},
-        scales:{r:{min:50,max:105,grid:{color:'#f0eff8'},angleLines:{color:'#e4e2f0'},
+        scales:{r:{min:50,max:105,grid:{color:'#e8e5ff'},angleLines:{color:'#e4e2f0'},
           ticks:{color:'#6b6890',backdropColor:'transparent',font:{size:8,weight:'700'},stepSize:10},
           pointLabels:{color:'#1e1b3a',font:{size:10,weight:'800'}}}}},
       plugins:[{id:'rl2',afterDraw:function(chart){
@@ -385,10 +394,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt)}
     dc(id); var ctx=document.getElementById(id); if(!ctx)return;
     CI[id]=new Chart(ctx,{type:'bar',
       data:{labels:regs,datasets:[
-        {label:'Leads',data:leads,backgroundColor:color+'28',borderColor:color,borderWidth:1.5,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
-        {label:'Won',  data:won,  backgroundColor:color,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
+        {label:'Leads',data:leads,backgroundColor:color+'55',borderColor:color,borderWidth:2,borderRadius:4,barPercentage:0.7,categoryPercentage:0.65},
+        {label:'Won',  data:won,  backgroundColor:color+'ee',borderRadius:4,barPercentage:0.7,categoryPercentage:0.65}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:26}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:34}},
         plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:function(c){var v=c.parsed.y;return ' '+c.dataset.label+': '+v+(c.datasetIndex===1?' ('+pct(won[c.dataIndex],leads[c.dataIndex])+'%)':'');}}}},
         scales:{x:AXS,y:AY}},
       plugins:[pillPlugin(leads,won,color)]
