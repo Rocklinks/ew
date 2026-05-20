@@ -215,45 +215,26 @@ function doGenerate(){
     const hS=findHdr(S.sales),hW=findHdr(S.warr);
     const wm={};
     for(let i=hW+1;i<S.warr.length;i++){const r=S.warr[i],e=String(r[0]||'').trim();if(e)wm[e]=parseFloat(r[2])||0}
-    // Branch prefix map — first part of employee code maps to branch
-    const PREFIX_BR={
-      'ASM':'Ambasamudram','ARM':'Anjugramam','TCN':'Thiruchendur','TVL':'Tirunelveli',
-      'NGR':'Nagercoil','KVT':'Kovilpatti','TUT':'Tuticorin','RND':'Ramnad',
-      'SVK':'Sankarankovil','MAR':'Marthandam','APK':'Aruppukottai','VNR':'Virudhunagar',
-      'KGL':'Karungal','TCL':'Thuckalay','KLK':'Kulasekharam','COL':'Colachel',
-      'MND':'Monday Market','ERL':'Eral','UDK':'Udankudi','KYT':'Kayathar',
-      'PMD':'Paramakudi','SYK':'Sayalkudi','VLK':'Villathikullam','STR':'Sattur',
-      'TNK':'Thenkasi','SRD':'Surandai','PLK':'Puliyankudi','SNG':'Sengottai',
-      'RJP':'Rajapalayam','SVS':'Sivakasi','TKS':'Thenkasi','VLR':'Valliyur',
-      'TCS':'Thiruchendur'
-    };
-    function prefixOk(emp,br){
-      // Extract prefix: chars before first digit
-      const m=emp.match(/^([A-Za-z]+)\d/);
-      if(!m)return true; // no prefix pattern, allow
-      const pfx=m[1].toUpperCase();
-      const mapped=PREFIX_BR[pfx];
-      if(!mapped)return true; // unknown prefix, allow
-      return br.toLowerCase().startsWith(mapped.toLowerCase().slice(0,4));
+    function isJunk(emp){
+      const n=emp.toUpperCase();
+      return n.includes('EXPO')||n.includes('TRANSFER')||n.includes('-SD ')||n.includes('NO SALES EMPLOYEE');
     }
 
     const data=[];
     for(let i=hS+1;i<S.sales.length;i++){
       const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
+      if(isJunk(emp))continue;
       const sp=parseFloat(r[2])||0;
       let br='';
       if(r[18]&&String(r[18]).trim())br=String(r[18]).trim();
       if(!br)continue;
-      if(!prefixOk(emp,br))continue; // skip mismatched employees
       const ew=wm[emp]!==undefined?wm[emp]:0;
       data.push({emp,sp,br,ew,pct:sp>0?ew/sp:0});
     }
     if(!data.length){showErr('No data found. Check columns.');return}
     const branches={};
     data.forEach(r=>{
-      const n=r.emp.toUpperCase();
-      if(n.includes('EXPO')||n.includes('TRANSFER'))return;
-      if(!branches[r.br])branches[r.br]=[];branches[r.br].push(r)
+      if(!branches[r.br])branches[r.br]=[];branches[r.br].push(r);
     });
     Object.keys(branches).forEach(b=>branches[b].sort((a,b)=>b.pct-a.pct));
     S.report={data,branches};
@@ -662,7 +643,7 @@ function exportExcel(){
     // Filter out Expo-SATHYA and Transfer-SATHYA rows
     const br=branches[b].filter(r=>{
       const n=r.emp.toUpperCase();
-      return !n.includes('EXPO') && !n.includes('TRANSFER');
+      return !n.includes('EXPO')&&!n.includes('TRANSFER')&&!n.includes('-SD ')&&!n.includes('NO SALES EMPLOYEE');
     });
     if(!br.length)return;
 
