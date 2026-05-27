@@ -220,6 +220,20 @@ function doGenerate(){
       return n.includes('EXPO')||n.includes('TRANSFER')||n.includes('-SD ')||n.includes('NO SALES EMPLOYEE');
     }
 
+    // Build prefix→branch map dynamically from the data itself
+    // First pass: collect all emp+branch pairs, map prefix to branch
+    const prefixMap={};
+    for(let i=hS+1;i<S.sales.length;i++){
+      const r=S.sales[i];
+      const emp=String(r[0]||'').trim();
+      const br=String(r[18]||'').trim();
+      if(!emp||!br)continue;
+      const m=emp.match(/^([A-Za-z]+\d+)-/); // e.g. TCN1, MAR1, ASM1
+      if(!m)continue;
+      const code=m[1].toUpperCase();
+      if(!prefixMap[code])prefixMap[code]=br; // first seen = correct branch
+    }
+
     const data=[];
     for(let i=hS+1;i<S.sales.length;i++){
       const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
@@ -228,6 +242,13 @@ function doGenerate(){
       let br='';
       if(r[18]&&String(r[18]).trim())br=String(r[18]).trim();
       if(!br)continue;
+      // Check prefix matches branch
+      const m=emp.match(/^([A-Za-z]+\d+)-/);
+      if(m){
+        const code=m[1].toUpperCase();
+        const expectedBr=prefixMap[code];
+        if(expectedBr&&expectedBr!==br)continue; // wrong branch — skip
+      }
       const ew=wm[emp]!==undefined?wm[emp]:0;
       data.push({emp,sp,br,ew,pct:sp>0?ew/sp:0});
     }
