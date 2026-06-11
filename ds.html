@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EW Tracker</title>
+<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+:root{
+  --bg:#f0f4ff;--white:#ffffff;--border:#e2e8f8;
+  --p:#6c47ff;--p2:#8b6fff;--p-light:#ede9ff;
+  --teal:#0ea5e9;--teal-light:#e0f5ff;
+  --orange:#f97316;--orange-light:#fff3e8;
+  --green:#16a34a;--green-light:#dcfce7;
+  --red:#dc2626;--red-light:#fee2e2;
+  --yellow:#ca8a04;--yellow-light:#fef9c3;
+  --text:#0f172a;--muted:#64748b;--subtle:#94a3b8;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(108,71,255,.07);
+  --shadow-lg:0 8px 32px rgba(108,71,255,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;padding-bottom:80px}
+
+header{
+  background:linear-gradient(135deg,#6c47ff 0%,#a78bfa 50%,#38bdf8 100%);
+  padding:0;position:relative;overflow:hidden;
+}
+header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hinner{position:relative;max-width:1080px;margin:0 auto;padding:28px 28px 24px;display:flex;align-items:center;gap:16px}
+.hlogo{width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);flex-shrink:0}
+.htitle h1{font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.4px}
+.htitle p{font-size:.78rem;color:rgba(255,255,255,.75);margin-top:2px;font-family:'DM Mono',monospace}
+.hbadges{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.hbadge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);font-family:'DM Mono',monospace;letter-spacing:.5px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 0}
+
+.notice{
+  background:var(--white);border:1.5px solid var(--border);border-radius:14px;
+  padding:12px 18px;font-family:'DM Mono',monospace;font-size:.73rem;
+  color:var(--muted);margin-bottom:24px;display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;box-shadow:var(--shadow);
+}
+.notice-icon{font-size:1rem}
+.ok{color:var(--green);font-weight:700}
+.bad{color:var(--red);font-weight:700}
+
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:.8rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--p);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--p-light),transparent);border-radius:2px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grp-label{font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.grp-sp{background:var(--orange-light);color:var(--orange)}
+.grp-ew{background:var(--teal-light);color:var(--teal)}
+
+.dz{
+  border:2px dashed var(--border);border-radius:14px;background:#fafbff;
+  padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;
+  position:relative;min-height:108px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+}
+.dz:hover,.dz.over{border-color:var(--p);background:var(--p-light);transform:translateY(-1px);box-shadow:0 4px 16px rgba(108,71,255,.12)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz .icon{font-size:1.8rem;filter:grayscale(.3)}
+.dz .lbl{font-size:.75rem;color:var(--muted);font-weight:500}
+.dz .lbl b{color:var(--p)}
+
+.badge{position:absolute;top:8px;left:8px;font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:6px;font-family:'DM Mono',monospace;letter-spacing:.5px}
+.badge-req{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}
+.badge-opt{background:var(--subtle);color:#fff}
+
+.dz .prev{max-height:68px;max-width:100%;border-radius:8px;object-fit:contain;display:none;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.dz.has .prev{display:block}.dz.has .icon,.dz.has .lbl{display:none}
+.dz .fn{font-size:.68rem;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px;display:none;word-break:break-all;font-weight:500}
+.dz.has .fn{display:block}
+.clr{position:absolute;top:7px;right:7px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:.65rem;padding:3px 7px;cursor:pointer;display:none;z-index:10;font-weight:700;transition:all .15s}
+.clr:hover{background:#b91c1c;transform:scale(1.05)}
+.dz.has .clr{display:block}
+
+.mrow{display:flex;gap:12px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
+.mrow label{font-size:.75rem;font-weight:600;color:var(--muted);font-family:'DM Mono',monospace}
+select{
+  background:var(--white);color:var(--text);border:1.5px solid var(--border);
+  border-radius:10px;padding:8px 14px;font-family:'DM Mono',monospace;font-size:.78rem;
+  cursor:pointer;outline:none;max-width:360px;box-shadow:var(--shadow);transition:border-color .2s;
+}
+select:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-light)}
+
+.go{
+  background:linear-gradient(135deg,#6c47ff,#a78bfa);color:#fff;border:none;
+  border-radius:12px;padding:13px 32px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 4px 16px rgba(108,71,255,.3);letter-spacing:.2px;
+}
+.go:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,71,255,.4)}
+.go:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+.status{
+  border-radius:12px;padding:12px 18px;font-family:'DM Mono',monospace;font-size:.76rem;
+  margin:18px 0;min-height:44px;display:flex;align-items:center;gap:10px;
+  border:1.5px solid var(--border);background:var(--white);color:var(--muted);
+  box-shadow:var(--shadow);transition:all .3s;
+}
+.status.run{color:#2563eb;border-color:#93c5fd;background:#eff6ff}
+.status.ok2{color:var(--green);border-color:#86efac;background:var(--green-light)}
+.status.err{color:var(--red);border-color:#fca5a5;background:var(--red-light)}
+.spin{width:14px;height:14px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.dbg-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+.dbg-title{font-size:.78rem;font-weight:700;color:var(--p);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dbg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dbg-sub{font-family:'DM Mono',monospace;font-size:.68rem;font-weight:700;margin-bottom:5px}
+.dbg-sub-s{color:var(--orange)}.dbg-sub-e{color:var(--teal)}
+pre.dbg-pre{
+  background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;
+  padding:12px;font-family:'DM Mono',monospace;font-size:.68rem;
+  color:#334155;overflow:auto;max-height:240px;white-space:pre-wrap;word-break:break-all;
+  line-height:1.5;
+}
+.hide-btn{background:var(--subtle);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:.68rem;cursor:pointer;margin-left:auto;font-weight:600;transition:all .15s}
+.hide-btn:hover{background:var(--muted)}
+
+.thead-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.thead-row h2{font-size:.85rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--p);display:flex;align-items:center;gap:8px}
+.exp{
+  background:linear-gradient(135deg,var(--green),#22c55e);color:#fff;border:none;
+  border-radius:10px;padding:9px 22px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 12px rgba(22,163,74,.25);display:flex;align-items:center;gap:7px;
+}
+.exp:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(22,163,74,.35)}
+.exp:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+
+.tw{overflow-x:auto;border-radius:16px;border:1.5px solid var(--border);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:.8rem}
+thead th{
+  background:linear-gradient(135deg,#6c47ff,#818cf8);color:#fff;
+  padding:13px 16px;text-align:left;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;font-size:.68rem;
+}
+thead th:first-child{border-radius:14px 0 0 0}
+thead th:last-child{border-radius:0 14px 0 0}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:hover{background:#f5f3ff}
+tbody td{padding:10px 16px;color:var(--text)}
+tbody td:first-child{color:var(--subtle);font-weight:500}
+tbody td:nth-child(2){font-weight:600;color:var(--text)}
+td.ach{font-weight:700;color:var(--green)}
+
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.pill-g{background:var(--green-light);color:var(--green)}
+.pill-r{background:var(--red-light);color:var(--red)}
+.pill-e{background:var(--border);color:var(--muted)}
+
+tr.red-row{background:linear-gradient(90deg,#fff5f5,#fff)}
+tr.red-row:hover{background:#fee2e2}
+tr.red-row td:nth-child(2){color:var(--red)}
+tr.tot{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important}
+tr.tot td{font-weight:800;color:var(--p);font-size:.82rem;border-top:2px solid var(--p)}
+tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important}
+.em{color:var(--subtle);font-style:normal}
+
+.val-sp{color:#ea580c;font-weight:600}
+.val-ew{color:#0284c7;font-weight:600}
+
+@media(max-width:620px){
+  .grid{grid-template-columns:1fr}
+  .hinner{padding:18px 16px}
+  .dbg-grid{grid-template-columns:1fr}
+  .hbadges{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hinner">
+    <div class="hlogo">📊</div>
+    <div class="htitle">
+      <h1>EW Tracker</h1>
+      <p>Branch Sales Price & Extended Warranty Analyser</p>
+    </div>
+    <div class="hbadges">
+      <span class="hbadge">36 Branches</span>
+      <span class="hbadge">AI Vision</span>
+      <span class="hbadge">Auto Excel</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- INFO -->
+  <div class="notice">
+    <span class="notice-icon">ℹ️</span>
+    <span>No API key needed — powered by Puter.js (free, user-pays model). Just upload images and extract.</span>
+  </div>
+
+  <!-- UPLOAD CARD -->
+  <div class="card">
+    <div class="card-title">📁 Upload Images</div>
+    <div class="grid">
+      <div>
+        <div class="grp-label grp-sp">💰 Sales Price</div>
+        <div class="dz" id="d1" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,1)">
+          <span class="badge badge-req">IMG 1</span>
+          <button class="clr" onclick="cl(1,event)">✕</button>
+          <div class="icon">🖼️</div>
+          <div class="lbl">Drop or click · <b>Required</b></div>
+          <img class="prev" id="p1"/><div class="fn" id="f1"></div>
+          <input type="file" accept="image/*" onchange="hf(this,1)">
+        </div>
+        <div class="dz opt" id="d2" style="margin-top:10px" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,2)">
+          <span class="badge badge-opt">IMG 2 · Optional</span>
+          <button class="clr" onclick="cl(2,event)">✕</button>
+          <div class="icon">🖼️</div>
+          <div class="lbl">Drop or click · <b>Optional</b></div>
+          <img class="prev" id="p2"/><div class="fn" id="f2"></div>
+          <input type="file" accept="image/*" onchange="hf(this,2)">
+        </div>
+      </div>
+      <div>
+        <div class="grp-label grp-ew">🛡️ Extended Warranty (EW)</div>
+        <div class="dz" id="d3" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,3)">
+          <span class="badge badge-req">IMG 3</span>
+          <button class="clr" onclick="cl(3,event)">✕</button>
+          <div class="icon">🖼️</div>
+          <div class="lbl">Drop or click · <b>Required</b></div>
+          <img class="prev" id="p3"/><div class="fn" id="f3"></div>
+          <input type="file" accept="image/*" onchange="hf(this,3)">
+        </div>
+        <div class="dz opt" id="d4" style="margin-top:10px" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,4)">
+          <span class="badge badge-opt">IMG 4 · Optional</span>
+          <button class="clr" onclick="cl(4,event)">✕</button>
+          <div class="icon">🖼️</div>
+          <div class="lbl">Drop or click · <b>Optional</b></div>
+          <img class="prev" id="p4"/><div class="fn" id="f4"></div>
+          <input type="file" accept="image/*" onchange="hf(this,4)">
+        </div>
+      </div>
+    </div>
+
+    <div class="mrow">
+      <label>Vision Model:</label>
+      <select id="mdl">
+        <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+        <option value="google/gemini-2.0-flash">Gemini 2.0 Flash</option>
+        <option value="google/gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+        <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
+        <option value="openai/gpt-5.4-nano">GPT-5.4 Nano</option>
+      </select>
+    </div>
+
+    <button class="go" id="btn" onclick="run()" disabled>
+      <span>🔍</span> Extract & Build Table
+    </button>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status" id="st">Ready — upload Image 1 + Image 3 to start.</div>
+
+  <!-- DEBUG PANEL -->
+  <div id="dbg" style="display:none">
+    <div class="dbg-wrap">
+      <div class="dbg-title">
+        🔬 Raw AI Output (Debug)
+        <button class="hide-btn" onclick="document.getElementById('dbg').style.display='none'">Hide</button>
+      </div>
+      <div class="dbg-grid">
+        <div>
+          <div class="dbg-sub dbg-sub-s">💰 SALES (IMG 1/2)</div>
+          <pre class="dbg-pre" id="dbgS">—</pre>
+        </div>
+        <div>
+          <div class="dbg-sub dbg-sub-e">🛡️ EW (IMG 3/4)</div>
+          <pre class="dbg-pre" id="dbgE">—</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="thead-row">
+      <h2>📋 Results</h2>
+      <button class="exp" id="xbtn" onclick="xls()" disabled>⬇ Export Excel</button>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>S.No</th><th>Branch</th><th>Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
+        <tbody id="tb">
+          <tr><td colspan="5" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload images and click Extract</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BR=["Ambasamudram-1","Anjugramam-1","Aruppukottai","Aruppukottai -2","Colachel-1","Eral-2","Karungal-1","Kayathar-1","Kovilpatti","Kulasekharam-1","Marthandam","Monday Market","Nagercoil","Paramakudi","Puliyankudi-1","Rajapalayam","Ramnad","Sankarankovil-1","Sattur-2","Sayalkudi-1","Sengottai","Sivakasi","Surandai-1","Thenkasi","Thenkasi-2","Thiruchendur-1","Thisayanvilai-1","Thuckalay-1","Tirunelveli-1","Tuticorin-1","Tuticorin-2","Udankudi","Valliyur-1","Villathikullam","Virudhunagar","Virudhunagar-2"];
+const fs={1:null,2:null,3:null,4:null};
+
+window.addEventListener('DOMContentLoaded',()=>cr());
+
+function hf(inp,s){const f=inp.files[0];if(f)set(s,f)}
+function set(s,f){
+  fs[s]=f;const d=document.getElementById('d'+s);
+  d.classList.add('has');
+  document.getElementById('p'+s).src=URL.createObjectURL(f);
+  document.getElementById('f'+s).textContent=f.name;
+  cr();
+}
+function cl(s,e){
+  e.stopPropagation();fs[s]=null;
+  const d=document.getElementById('d'+s);d.classList.remove('has');
+  document.getElementById('p'+s).src='';document.getElementById('f'+s).textContent='';
+  d.querySelector('input').value='';cr();
+}
+function dg(e,el){e.preventDefault();el.classList.add('over')}
+function dl(el){el.classList.remove('over')}
+function dp(e,el,s){e.preventDefault();el.classList.remove('over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))set(s,f)}
+function cr(){document.getElementById('btn').disabled=!(fs[1]&&fs[3])}
+function ss(m,t=''){
+  const el=document.getElementById('st');
+  el.className='status '+(t==='run'?'run':t==='ok'?'ok2':t==='err'?'err':'');
+  el.innerHTML=t==='run'?`<div class="spin"></div>${m}`:m;
+}
+
+const PROMPT_SALES=`You are extracting data from a sales report table image. The table has exactly 4 columns in this fixed order:
+
+Column 1: Serial Number (S.No)
+Column 2: Branch Name
+Column 3: Sales Price (THIS IS THE VALUE YOU MUST EXTRACT)
+Column 4: Extended Warranty / EW (DO NOT EXTRACT THIS)
+
+CRITICAL: You must extract ONLY column 3 (Sales Price). Column 4 is EW — completely ignore it.
+
+Example row in the table:
+| 1 | Nagercoil | 2,28,63,594 | 14,06,612 |
+                     ↑ column 3     ↑ column 4 (IGNORE THIS)
+
+For the example above, extract: {"branch":"Nagercoil","value":22863594}
+
+Number format rules:
+- Indian numbering: 2,28,63,594 means 22863594
+- 38,052 means 38052
+- 1,18,560 means 118560
+- Remove ALL commas, convert to plain integer
+- If cell shows "–" or "-" or blank, value = 0
+
+Return ONLY a raw JSON array. No markdown, no explanation, no text before or after:
+[{"branch":"Branch Name","value":12345},...]
+
+Rules:
+- Branch name exactly as printed in column 2
+- value = column 3 ONLY (Sales Price)
+- Include EVERY branch row, even if value is 0
+- Do NOT include total/summary rows`;
+
+const PROMPT_EW=`You are extracting data from a sales report table image. The table has exactly 4 columns in this fixed order:
+
+Column 1: Serial Number (S.No)
+Column 2: Branch Name
+Column 3: Sales Price (DO NOT EXTRACT THIS)
+Column 4: Extended Warranty / EW (THIS IS THE VALUE YOU MUST EXTRACT)
+
+CRITICAL: You must extract ONLY column 4 (EW). Column 3 is Sales Price — completely ignore it.
+
+Example row in the table:
+| 1 | Nagercoil | 2,28,63,594 | 14,06,612 |
+                     ↑ column 3     ↑ column 4 (EXTRACT THIS)
+
+For the example above, extract: {"branch":"Nagercoil","value":1406612}
+
+Number format rules:
+- Indian numbering: 1,18,560 means 118560
+- 38,052 means 38052
+- 2,28,63,594 means 22863594
+- Remove ALL commas, convert to plain integer
+- If cell shows "–" or "-" or blank, value = 0
+
+Return ONLY a raw JSON array. No markdown, no explanation, no text before or after:
+[{"branch":"Branch Name","value":12345},...]
+
+Rules:
+- Branch name exactly as printed in column 2
+- value = column 4 ONLY (EW)
+- Include EVERY branch row, even if value is 0
+- Do NOT include total/summary rows`;
+
+async function callAI(files,prompt){
+  const model=document.getElementById('mdl').value;
+  const media=files.filter(Boolean);
+  const result=await puter.ai.chat(prompt,media.length===1?media[0]:media,{model});
+  const raw=result?.message?.content||'';
+  return{parsed:parseJ(raw),raw};
+}
+function parseJ(raw){
+  const t=raw.replace(/```[a-z]*\n?/gi,'').replace(/```/g,'').trim();
+  const s=t.indexOf('['),e=t.lastIndexOf(']');
+  if(s<0||e<0)return[];
+  try{return JSON.parse(t.slice(s,e+1))}catch{return[]}
+}
+function mb(raw){
+  const c=raw.trim().replace(/\s+/g,' '),lo=s=>s.toLowerCase();
+  return BR.find(b=>lo(b)===lo(c))||BR.find(b=>lo(c).includes(lo(b))||lo(b).includes(lo(c)))||BR.find(b=>lo(b).replace(/[\s\-]/g,'')===lo(c).replace(/[\s\-]/g,''))||null;
+}
+function mkMap(data){
+  const m={},seen=new Set();
+  for(const r of data){
+    if(!r.branch)continue;
+    const br=mb(String(r.branch));
+    if(!br||seen.has(br))continue;
+    seen.add(br);
+    const n=parseFloat(String(r.value).replace(/,/g,'').replace(/[^0-9.\-]/g,''));
+    m[br]=isNaN(n)?null:n;
+  }
+  return m;
+}
+
+let TD=null;
+async function run(){
+  document.getElementById('btn').disabled=true;
+  document.getElementById('xbtn').disabled=true;
+  try{
+    ss('Step 1/2 — extracting Sales Price from image(s)...','run');
+    const salesFiles=[fs[1],fs[2]].filter(Boolean);
+    const sRes=await callAI(salesFiles,PROMPT_SALES);
+
+    ss(`Step 2/2 — got ${sRes.parsed.length} sales rows. Extracting EW...`,'run');
+    const ewFiles=[fs[3],fs[4]].filter(Boolean);
+    const eRes=await callAI(ewFiles,PROMPT_EW);
+
+    document.getElementById('dbg').style.display='block';
+    document.getElementById('dbgS').textContent=JSON.stringify(sRes.parsed,null,2);
+    document.getElementById('dbgE').textContent=JSON.stringify(eRes.parsed,null,2);
+
+    buildTable(mkMap(sRes.parsed),mkMap(eRes.parsed));
+    ss('✓ Extraction complete — review debug panel, then export Excel','ok');
+    document.getElementById('xbtn').disabled=false;
+  }catch(e){ss('✗ Error: '+e.message,'err');console.error(e)}
+  document.getElementById('btn').disabled=false;
+}
+
+function buildTable(sm,em){
+  const rows=BR.map((b,i)=>{
+    const sp=sm[b]??null,ew=em[b]??null;
+    const ach=(sp&&sp!==0&&ew)?Math.min(ew/sp*100,100):0;
+    return{sno:i+1,b,sp,ew,ach};
+  });
+  rows.sort((a,b)=>b.ach-a.ach);
+  rows.forEach((r,i)=>r.sno=i+1);
+  const tsp=rows.reduce((s,r)=>s+(r.sp!==null?r.sp:0),0);
+  const tew=rows.reduce((s,r)=>s+(r.ew!==null?r.ew:0),0);
+  const tach=tsp>0?Math.min(tew/tsp*100,100):0;
+  TD={rows,tsp,tew,tach};
+  render();
+}
+
+function render(){
+  const{rows,tsp,tew,tach}=TD,th=tach,tb=document.getElementById('tb');
+  tb.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const red=th!==null&&r.ach<=th;
+    if(red)tr.className='red-row';
+    const achHtml=`<span class="pill ${red?'pill-r':'pill-g'}">${r.ach.toFixed(1)}%</span>`;
+    tr.innerHTML=`<td>${r.sno}</td><td>${r.b}</td>
+      <td class="val-sp">${r.sp!==null?n(r.sp):'<span class="em">—</span>'}</td>
+      <td class="val-ew">${r.ew!==null?n(r.ew):'<span class="em">—</span>'}</td>
+      <td class="ach">${achHtml}</td>`;
+    tb.appendChild(tr);
+  });
+  const achTotHtml=`<span class="pill pill-g">${tach.toFixed(1)}%</span>`;
+  const tot=document.createElement('tr');tot.className='tot';
+  tot.innerHTML=`<td></td><td>TOTAL</td><td>${n(tsp)}</td><td>${n(tew)}</td><td>${achTotHtml}</td>`;
+  tb.appendChild(tot);
+}
+function n(v){return v==null?'':Number(v).toLocaleString('en-IN')}
+
+function xls(){
+  if(!TD)return;
+  const{rows,tsp,tew,tach}=TD;
+
+  const wb=XLSX.utils.book_new();
+  const aoa=[['S.No','Branch','Sales Price','EW','Ach%']];
+  rows.forEach(r=>aoa.push([r.sno,r.b,r.sp!==null?r.sp:'',r.ew!==null?r.ew:'',r.ach/100]));
+  aoa.push(['','TOTAL',tsp,tew,tach/100]);
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:6},{wch:26},{wch:18},{wch:18},{wch:10}];
+
+  const RED='C00000', WHITE='FFFFFF', BLACK='000000';
+  const border={style:'thin',color:{rgb:BLACK}};
+  const allBorders={top:border,bottom:border,left:border,right:border};
+
+  const totalRows=aoa.length;
+
+  for(let R=0;R<totalRows;R++){
+    const isHeader=R===0;
+    const isTotalRow=R===totalRows-1;
+    const dataIdx=R-1;
+    const isRedRow=!isHeader&&!isTotalRow&&rows[dataIdx]&&rows[dataIdx].ach<=tach;
+
+    for(let C=0;C<=4;C++){
+      const ref=XLSX.utils.encode_cell({r:R,c:C});
+      if(!ws[ref]) ws[ref]={t:'s',v:''};
+      const cell=ws[ref];
+
+      if((isHeader||isTotalRow||true)&&C===4&&!isHeader){
+        cell.t='n'; cell.z='0.0%';
+      }
+
+      cell.s={
+        alignment:{horizontal:'center',vertical:'center'},
+        border:allBorders,
+        font:{},
+        fill:{}
+      };
+
+      if(isHeader){
+        cell.s.fill={fgColor:{rgb:RED}};
+        cell.s.font={bold:true,color:{rgb:WHITE},sz:11};
+      } else if(isTotalRow){
+        cell.s.fill={fgColor:{rgb:RED}};
+        cell.s.font={bold:true,color:{rgb:WHITE},sz:11};
+      } else if(isRedRow){
+        cell.s.fill={fgColor:{rgb:'FFCCCC'}};
+        cell.s.font={color:{rgb:RED},bold:C===4};
+      } else {
+        cell.s.fill={fgColor:{rgb:WHITE}};
+        cell.s.font={color:{rgb:BLACK}};
+      }
+
+      if(C===1) cell.s.alignment={horizontal:'left',vertical:'center'};
+    }
+  }
+
+  ws['!rows']=Array(totalRows).fill({hpt:18});
+  XLSX.utils.book_append_sheet(wb,ws,'EW Tracker');
+  XLSX.writeFile(wb,'EW_Tracker_Report.xlsx',{cellStyles:true});
+}
+</script>
+</body>
+</html>
