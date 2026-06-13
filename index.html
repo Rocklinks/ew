@@ -15,10 +15,11 @@
 body{font-family:system-ui,-apple-system,sans-serif;background:var(--BG);color:var(--TX);font-size:13px;min-height:100vh;font-weight:500}
 
 /* HEADER */
-header{background:var(--W);border-bottom:3px solid var(--R);padding:0 16px;display:flex;align-items:center;gap:10px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.logo{width:30px;height:30px;background:var(--R);border-radius:6px;display:grid;place-items:center;flex-shrink:0}
-header h1{font-size:.95rem;font-weight:700;color:var(--TX)}
-.hbadge{margin-left:auto;background:#FEF2F2;color:var(--R);padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:600;border:1px solid #FECACA;white-space:nowrap}
+header{background:linear-gradient(135deg,#1e293b 0%,#334155 100%);border-bottom:3px solid var(--R);padding:0 16px;display:flex;align-items:center;gap:10px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.logo{width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:6px;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+header h1{font-size:.95rem;font-weight:700;color:#fff}
+.hbadge{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:600;border:1px solid rgba(255,255,255,.25);white-space:nowrap;backdrop-filter:blur(8px)}
+
 
 /* UPLOAD */
 .upload-wrap{background:var(--W);border-bottom:1px solid var(--BD);padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
