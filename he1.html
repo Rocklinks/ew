@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HE Premium Report Builder</title>
+<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+:root{--p:#1E40AF;--pl:#3B82F6;--pm:#DBEAFE;--a:#D97706;--am:#FEF3C7;--bg:#F1F5F9;--sf:#FFF;--bd:#CBD5E1;--bs:#93C5FD;--tx:#0F172A;--ts:#475569;--tm:#94A3B8;--ok:#15803D;--okb:#F0FDF4;--er:#DC2626;--erb:#FEF2F2;--wn:#D97706;--wnb:#FFFBEB;--r:10px;--rh:52px}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(30,64,175,.25)}
+.hb{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:15px}
+.hb .ico{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;border:1px solid rgba(255,255,255,.2)}
+.hb2{font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:12px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:3px}
+.kl{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);font-family:'JetBrains Mono',monospace}
+.kv{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;line-height:1;color:var(--p)}
+.kv.am{color:var(--a)}.kv.rd{color:var(--er)}.kv.gn{color:var(--ok)}.kv.sm{font-size:13px;padding-top:3px}
+.ks{font-size:11px;color:var(--tm)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.ch{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--bd);background:#F8FAFC}
+.ch .d{width:8px;height:8px;border-radius:50%;background:var(--pl);flex-shrink:0}
+.ch .d.on{animation:pulse 1.2s infinite}.ch .d.ok{background:var(--ok)}.ch .d.er{background:var(--er)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.cht{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--tx)}
+.cb{padding:14px}
+.dz{position:relative;border:2px dashed var(--bs);border-radius:var(--r);padding:36px 24px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+.dz:hover,.dz.drag{border-color:var(--p);background:var(--pm)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz .ic{font-size:34px;margin-bottom:8px;display:block}.dz:hover .ic{transform:scale(1.1)}
+.dz .dt{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;margin-bottom:4px}
+.dz .dh{font-size:12px;color:var(--tm);margin-bottom:12px}
+.tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.tg{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:3px 9px;border-radius:5px;background:var(--pm);color:var(--p);border:1px solid var(--bs)}
+.tg.a{background:var(--am);color:var(--a);border-color:#FCD34D}
+.lw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:none}
+.lw.show{display:block}
+.lt{width:100%;border-collapse:collapse;font-size:12px}
+.lt thead th{background:#F1F5F9;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--tm);padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+.lt tbody tr{border-bottom:1px solid var(--bd);height:34px}.lt tbody tr:hover{background:#F8FAFC}
+.lt td{padding:0 12px;vertical-align:middle;font-size:12px}
+.lt td:first-child{font-family:'JetBrains Mono',monospace;width:50px}
+.bg{display:inline-flex;font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.bg.ok{background:var(--okb);color:var(--ok);border:1px solid rgba(21,128,61,.2)}
+.bg.info{background:var(--pm);color:var(--p);border:1px solid var(--bd)}
+.bg.wn{background:var(--wnb);color:var(--wn);border:1px solid rgba(217,119,6,.2)}
+.bg.er{background:var(--erb);color:var(--er);border:1px solid rgba(220,38,38,.2)}
+.dl{display:none}.dl.show{display:block}
+.dc{background:linear-gradient(135deg,#1E40AF,#1D4ED8);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 4px 16px rgba(30,64,175,.25)}
+.di{display:flex;flex-direction:column;gap:2px}
+.dlt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#fff}
+.dlm{font-size:12px;color:rgba(255,255,255,.65)}
+.db{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.db:hover{background:rgba(255,255,255,.25);transform:translateY(-1px)}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bs);border-radius:8px}
+.pgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.pchip{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:6px 10px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--ts);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.pchip.found{background:var(--okb);border-color:rgba(21,128,61,.25);color:var(--ok)}
+.pchip.found.off{background:var(--sf);border-color:var(--bd);color:var(--tm);opacity:.55}
+.pchip.miss{background:var(--erb);border-color:rgba(220,38,38,.2);color:var(--er);opacity:.7;cursor:default}
+.pchip input{cursor:pointer}
+.genbtn{margin-top:12px;display:flex;justify-content:flex-end}
+.genb{background:var(--p);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.genb:hover{background:#1D4ED8;transform:translateY(-1px)}
+.genb:disabled{opacity:.5;cursor:not-allowed}
+.prewrap{display:none;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.prewrap.show{display:block}
+.pretabs{display:flex;gap:0;overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--bd)}
+.pretab{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:7px 13px;cursor:pointer;color:var(--tm);border-right:1px solid var(--bd);white-space:nowrap;flex-shrink:0;transition:all .12s}
+.pretab:hover{background:var(--pm);color:var(--p)}
+.pretab.active{background:var(--sf);color:var(--p);box-shadow:inset 0 -2px 0 var(--p)}
+.prebody{overflow:auto;max-height:480px;padding:0;background:#f8fafc}
+.xt{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;width:100%}
+.xt td{border:1px solid #bbb;padding:3px 10px;white-space:nowrap;text-align:center;min-width:60px}
+.xt td.xl{text-align:left;min-width:140px}
+.xt tr.xtitle td{background:#FF0000;color:#fff;font-weight:700;font-size:12px;text-align:center}
+.xt tr.xhdr td{background:#FF0000;color:#fff;font-weight:700}
+.xt tr.xtot td{background:#FF0000;color:#fff;font-weight:700}
+.xt tr.xreg td{background:#FF0000;color:#fff;font-weight:700}
+.xt tr.xred td.xach{color:#FF0000;font-weight:700}
+.xt tr.xdata td{background:#fff;color:#1A1A1A}
+</style>
+</head>
+<body>
+<header>
+  <div class="hb"><div class="ico">📊</div>HE Premium Report Builder</div>
+  <nav style="display:flex;gap:4px;margin-left:18px">
+    <a href="index.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Home</a>
+    <a href="leads.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Leads</a>
+    <a href="he.html" class="active" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#1E40AF;color:#fff;letter-spacing:.5px;">High End</a>
+     <a href="https://rocklinks.github.io/new-scrape-rev/" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Reviews</a>
+  </nav>
+  <span class="hb2">11 Products · Ach% Engine · ExcelJS</span>
+</header>
+<div class="wrap">
+  <div class="kpi">
+    <div class="kc"><div class="kl">Sheets</div><div class="kv" id="kSh">—</div><div class="ks">of 11 products</div></div>
+    <div class="kc"><div class="kl">Branches</div><div class="kv am" id="kBr">—</div><div class="ks">max per sheet</div></div>
+    <div class="kc"><div class="kl">Red Flagged</div><div class="kv rd" id="kRd">—</div><div class="ks">Ach% ≤ Total Ach%</div></div>
+    <div class="kc"><div class="kl">Status</div><div class="kv gn sm" id="kSt">READY</div><div class="ks" id="kFile">awaiting upload</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="d" id="uDot"></div><div class="cht" id="uTitle">Upload Source File</div></div>
+    <div class="cb">
+      <div class="dz" id="dropZone">
+        <input type="file" id="fileInput" accept=".xlsx,.xls"/>
+        <span class="ic">📂</span>
+        <div class="dt">Drop Excel file here</div>
+        <div class="dh">.xlsx — drag & drop or click to browse</div>
+        <div class="tags"><span class="tg">HE / Premium</span><span class="tg">11 Products</span><span class="tg a">Ach% Sort ↓</span><span class="tg a">Red ≤ Total Ach%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="pCard" style="display:none">
+    <div class="ch"><div class="d on"></div><div class="cht">Product Detection — untick to skip a sheet</div></div>
+    <div class="cb"><div class="pgrid" id="pGrid"></div><div class="genbtn"><button class="genb" id="genBtn">Generate Report ▸</button></div></div>
+  </div>
+  <div class="lw" id="logWrap">
+    <div class="ch"><div class="d on" id="lDot"></div><div class="cht" id="lTitle">Processing Log</div></div>
+    <table class="lt"><thead><tr><th>#</th><th>Status</th><th>Message</th></tr></thead><tbody id="lBody"></tbody></table>
+  </div>
+  <div class="prewrap" id="preWrap">
+    <div class="ch"><div class="d ok"></div><div class="cht">Live Preview — what goes into Excel</div></div>
+    <div class="pretabs" id="preTabs"></div>
+    <div class="prebody" id="preBody"></div>
+  </div>
+  <div class="dl" id="dlSec">
+    <div class="dc">
+      <div class="di"><div class="dlt" id="dlT">Report ready</div><div class="dlm" id="dlM"></div></div>
+      <button class="db" id="dlBtn">⬇ Download <span id="dlF"></span></button>
+    </div>
+  </div>
+</div>
+<script>
+const PRODS=[
+  {key:'mob',label:'Mobile 70K+',sheet:'Mob',rx:/mob(?:ile)?|70\s*k/i,ico:'📱'},
+  {key:'led',label:'LED 55 inch+',sheet:'LED',rx:/\bled\b|55\s*(?:inch|")/i,ico:'📺'},
+  {key:'sbs',label:'SBS',sheet:'SBS',rx:/\bsbs\b/i,ico:'🧊'},
+  {key:'wmfl',label:'WM FL',sheet:'WMFL',rx:/wm\s*fl|wmfl|front\s*load/i,ico:'🫧'},
+  {key:'chim',label:'Chimney',sheet:'Chim',rx:/chim(?:ney)?/i,ico:'🏠'},
+  {key:'dw',label:'DW',sheet:'DW',rx:/\bdw\b|dish\s*wash/i,ico:'🍽'},
+  {key:'wp',label:'W.P',sheet:'WP',rx:/\bw\.?p\b|wash(?:ing)?\s*mach|top\s*load/i,ico:'👕'},
+  {key:'oven',label:'Oven',sheet:'Oven',rx:/\boven\b/i,ico:'♨️'},
+  {key:'rvc',label:'RVC',sheet:'RVC',rx:/\brvc\b|robot\s*vac/i,ico:'🤖'},
+  {key:'inv',label:'Inverter',sheet:'Inv',rx:/\binv(?:erter)?\b/i,ico:'⚡'},
+  {key:'laptop',label:'Laptop',sheet:'Laptop',rx:/\blaptop\b/i,ico:'💻'}
+];
+const DEFAULT_SKIP=['wp','oven'];
+let previewData=[];
+let logIdx=0;
+let ctx=null; // holds parsed workbook state between detection phase and generate phase
+function getToday(){const d=new Date();return['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][d.getMonth()]+d.getDate()}
+function initLog(){logIdx=0;document.getElementById('lBody').innerHTML='';document.getElementById('logWrap').classList.add('show')}
+function log(msg,type='info'){logIdx++;const b=document.getElementById('lBody'),tr=document.createElement('tr');
+  if(type==='warn')tr.style.color='var(--wn)';if(type==='err')tr.style.color='var(--er)';
+  const bc=type==='ok'?'ok':type==='warn'?'wn':type==='err'?'er':'info';
+  tr.innerHTML=`<td>${logIdx}</td><td><span class="bg ${bc}">${type.toUpperCase()}</span></td><td>${msg}</td>`;
+  b.appendChild(tr);b.parentElement.parentElement.scrollTop=b.scrollHeight}
+function setLogStatus(t,ds){document.getElementById('lTitle').textContent=t;document.getElementById('lDot').className='d '+(ds==='done'?'ok':ds==='fail'?'er':'on')}
+function cellVal(ws,r,c){const cell=ws[XLSX.utils.encode_cell({r,c})];return cell?cell.v:undefined}
+function mergeTopLeft(ws,r,c){for(const m of(ws['!merges']||[])){if(r>=m.s.r&&r<=m.e.r&&c>=m.s.c&&c<=m.e.c)return cellVal(ws,m.s.r,m.s.c)}return cellVal(ws,r,c)}
+const normAch=v=>{const f=parseFloat(v);if(isNaN(f))return 0;const n=f>1&&f>=10?f/100:f;return Math.round(n*100)/100};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(typeof XLSX==='undefined'||typeof ExcelJS==='undefined'){
+    const missing=[typeof XLSX==='undefined'?'XLSX (SheetJS)':'',typeof ExcelJS==='undefined'?'ExcelJS':''].filter(Boolean).join(' + ');
+    document.getElementById('uTitle').textContent='⚠ Library blocked: '+missing+' failed to load (CDN blocked?)';
+    document.getElementById('uDot').className='d er';
+  }
+});
+
+function findTargetSheet(wb){
+  for(const n of wb.SheetNames)if(/premium/i.test(n))return{name:n,ws:wb.Sheets[n]};
+  for(const n of wb.SheetNames)if(/^he$/i.test(n.trim()))return{name:n,ws:wb.Sheets[n]};
+  let best=null,bestC=0;
+  for(const n of wb.SheetNames){const ws=wb.Sheets[n];if(!ws['!ref'])continue;const r=XLSX.utils.decode_range(ws['!ref']);if(r.e.c>bestC){bestC=r.e.c;best={name:n,ws}}}
+  return best;
+}
+
+async function processFile(file){
+  initLog();
+  document.getElementById('uDot').className='d on';
+  document.getElementById('uTitle').textContent='Processing: '+file.name;
+  document.getElementById('kSt').textContent='PROC';document.getElementById('kSt').style.color='var(--wn)';
+  document.getElementById('kFile').textContent=file.name;
+  document.getElementById('dlSec').classList.remove('show');
+  document.getElementById('preWrap').classList.remove('show');
+
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+    log('Sheets found: '+wb.SheetNames.join(', '));
+    const target=findTargetSheet(wb);
+    if(!target){fail('No usable sheet found');return}
+    log('Target sheet: "'+target.name+'"','ok');
+    const ws=target.ws;
+    const range=XLSX.utils.decode_range(ws['!ref']||'A1:A1');
+    log('Dimensions: '+(range.e.c+1)+' cols × '+(range.e.r+1)+' rows');
+
+    let prodRow=0,subRow=1,dataStart=2;
+    let m0=0,m1=0,m2=0;
+    for(let c=1;c<=range.e.c;c++){
+      const v0=(mergeTopLeft(ws,0,c)||'').toString();
+      const v1=(mergeTopLeft(ws,1,c)||'').toString();
+      const v2=(mergeTopLeft(ws,2,c)||'').toString();
+      if(PRODS.some(p=>p.rx.test(v0)))m0++;
+      if(PRODS.some(p=>p.rx.test(v1)))m1++;
+      if(PRODS.some(p=>p.rx.test(v2)))m2++;
+    }
+    if(m2>m0&&m2>m1){prodRow=2;subRow=3;dataStart=4}
+    else if(m1>m0){prodRow=1;subRow=2;dataStart=3}
+    log('prodRow='+(prodRow+1)+', subRow='+(subRow+1)+', dataStart='+(dataStart+1));
+
+    document.getElementById('pCard').style.display='';
+    const pGrid=document.getElementById('pGrid');pGrid.innerHTML='';
+
+    const groups={};
+    for(let c=1;c<=range.e.c;c++){
+      const h1=(mergeTopLeft(ws,prodRow,c)||'').toString().trim();
+      const h2=(mergeTopLeft(ws,subRow,c)||'').toString().trim();
+      if(/^total$/i.test(h2))continue;
+      const prod=PRODS.find(p=>p.rx.test(h1));
+      if(prod){
+        if(!groups[prod.key])groups[prod.key]={prod,cols:[],subHeaders:[]};
+        groups[prod.key].cols.push(c);
+        groups[prod.key].subHeaders.push(h2||'Col'+c);
+      }
+    }
+    const foundKeys=Object.keys(groups);
+    log('Matched: '+(foundKeys.length?foundKeys.map(k=>groups[k].prod.sheet).join(', '):'NONE'),foundKeys.length?'ok':'err');
+
+    for(const p of PRODS){
+      if(groups[p.key]){
+        const checked=!DEFAULT_SKIP.includes(p.key);
+        const lbl=document.createElement('label');
+        lbl.className='pchip found'+(checked?'':' off');
+        lbl.innerHTML=`<input type="checkbox" data-key="${p.key}" ${checked?'checked':''}/>${p.ico} ${p.label}`;
+        const cb=lbl.querySelector('input');
+        cb.addEventListener('change',()=>{lbl.classList.toggle('off',!cb.checked)});
+        pGrid.appendChild(lbl);
+      } else {
+        const chip=document.createElement('div');
+        chip.className='pchip miss';
+        chip.textContent=p.ico+' '+p.label;
+        pGrid.appendChild(chip);
+      }
+    }
+    if(!foundKeys.length){fail('No products matched');return}
+
+    // stash parsed state, wait for user to hit Generate
+    ctx={ws,dataStart,range,groups,foundKeys};
+    document.getElementById('uDot').className='d ok';
+    document.getElementById('uTitle').textContent='✓ Parsed: '+file.name+' — pick sheets, then Generate';
+    document.getElementById('kSt').textContent='PICK';document.getElementById('kSt').style.color='var(--wn)';
+    setLogStatus('Ready — waiting on sheet selection','ok');
+
+  }catch(err){fail(err.message);console.error(err)}
+}
+
+function generateReport(){
+  if(!ctx)return;
+  const{ws,dataStart,range,groups,foundKeys}=ctx;
+  const selected=foundKeys.filter(k=>{
+    const cb=document.querySelector(`input[data-key="${k}"]`);
+    return cb&&cb.checked;
+  });
+  if(!selected.length){log('No sheets selected — nothing to build','err');return}
+
+  document.getElementById('kSt').textContent='PROC';document.getElementById('kSt').style.color='var(--wn)';
+  setLogStatus('Building workbook','on');
+  const skipped=foundKeys.filter(k=>!selected.includes(k));
+  if(skipped.length)log('Skipped: '+skipped.map(k=>groups[k].prod.sheet).join(', '),'warn');
+
+  const outWb=new ExcelJS.Workbook();
+  outWb.creator='HE Premium Report Builder';
+  let totalSheets=0,maxBranches=0,totalRed=0;
+  previewData=[];
+
+  const RED_ARGB='FFFF0000',WHITE_ARGB='FFFFFFFF';
+  const BORDER_CLR='FFAAAAAA';
+  const thinBorder={top:{style:'thin',color:{argb:BORDER_CLR}},bottom:{style:'thin',color:{argb:BORDER_CLR}},left:{style:'thin',color:{argb:BORDER_CLR}},right:{style:'thin',color:{argb:BORDER_CLR}}};
+  const REDTXT_ARGB='FFFF0000';
+
+  function applyRedBoldStyle(cell){cell.font={name:'Calibri',size:11,bold:true,color:{argb:REDTXT_ARGB}};cell.border=thinBorder;cell.alignment={horizontal:'center',vertical:'middle'}}
+  function applyHeader(cell,align){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:RED_ARGB}};cell.font={name:'Calibri',size:11,bold:true,color:{argb:WHITE_ARGB}};cell.border=thinBorder;cell.alignment={horizontal:align||'center',vertical:'middle'}}
+  function applyNormal(cell,align){cell.border=thinBorder;cell.alignment={horizontal:align||'center',vertical:'middle'};cell.font={name:'Calibri',size:11}}
+  function applyTotal(cell,align){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:RED_ARGB}};cell.font={name:'Calibri',size:11,bold:true,color:{argb:WHITE_ARGB}};cell.border=thinBorder;cell.alignment={horizontal:align||'center',vertical:'middle'}}
+
+  for(const key of selected){
+    const{prod,cols,subHeaders}=groups[key];
+    const branchRows=[],totalRows=[],regionRows=[];
+
+    let firstTotalIdx=-1;
+    const allRawRows=[];
+    for(let r=dataStart;r<=range.e.r;r++){
+      const bn=cellVal(ws,r,0);
+      if(bn===null||bn===undefined||bn==='')continue;
+      const bnStr=bn.toString().trim();
+      const row=[bn,...cols.map(cc=>cellVal(ws,r,cc))];
+      allRawRows.push({bn:bnStr,row,origRow:r});
+    }
+
+    for(let i=0;i<allRawRows.length;i++){
+      if(/^total$/i.test(allRawRows[i].bn)){firstTotalIdx=i;break}
+    }
+
+    if(firstTotalIdx>=0){
+      for(let i=0;i<firstTotalIdx;i++)branchRows.push(allRawRows[i].row);
+      totalRows.push(allRawRows[firstTotalIdx].row);
+      for(let i=firstTotalIdx+1;i<allRawRows.length;i++)regionRows.push(allRawRows[i].row);
+    } else {
+      for(const item of allRawRows)branchRows.push(item.row);
+    }
+
+    log(prod.sheet+': '+branchRows.length+' branches, '+totalRows.length+' total(s), '+regionRows.length+' region rows');
+
+    let achIdx=subHeaders.findIndex(h=>/ach/i.test(h.toString())&&/%/.test(h.toString()));
+    if(achIdx<0)achIdx=subHeaders.findIndex(h=>/%/.test(h.toString()));
+    if(achIdx<0)log(prod.sheet+': no Ach% column matched, headers=['+subHeaders.join(' | ')+']','warn');
+    const achColInRow=achIdx+1;
+
+    if(achIdx>=0)branchRows.sort((a,b)=>normAch(b[achColInRow])-normAch(a[achColInRow]));
+
+    let tAchNorm=null;
+    if(totalRows.length&&achIdx>=0)tAchNorm=normAch(totalRows[0][achColInRow]);
+    log(prod.sheet+': totalAch='+(tAchNorm!==null?(tAchNorm*100).toFixed(0)+'%':'n/a'),tAchNorm!==null?'ok':'wn');
+
+    let sheetRed=0;
+    if(tAchNorm!==null&&achIdx>=0){for(const row of branchRows){if(normAch(row[achColInRow])<=tAchNorm)sheetRed++}}
+
+    const targetIdx=subHeaders.findIndex(h=>/target|tgt/i.test(h.toString()));
+    const targetColInRow=targetIdx>=0?targetIdx+1:-1;
+    const nc=subHeaders.length+1;
+    const wsName=prod.sheet.substring(0,31);
+    const xws=outWb.addWorksheet(wsName);
+
+    xws.mergeCells(1,1,1,nc);
+    const titleCell=xws.getCell(1,1);
+    titleCell.value=prod.label;
+    applyHeader(titleCell,'center');
+    for(let c=2;c<=nc;c++)applyHeader(xws.getCell(1,c),'center');
+
+    const hdrVals=['Branch',...subHeaders];
+    for(let c=0;c<nc;c++){
+      const cell=xws.getCell(2,c+1);
+      cell.value=hdrVals[c];
+      applyHeader(cell);
+    }
+
+    let exRow=3;
+    const previewRows=[];
+    for(const row of branchRows){
+      for(let c=0;c<nc;c++){
+        const cell=xws.getCell(exRow,c+1);
+        let raw=row[c];
+        const isAchCol=(achIdx>=0&&c===achColInRow);
+        if(isAchCol&&raw!=null){cell.value=normAch(raw);cell.numFmt='0%'}
+        else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
+        else{cell.value=raw!=null?raw:''}
+
+        const isAchRed=tAchNorm!==null&&achIdx>=0&&isAchCol&&normAch(row[achColInRow])<=tAchNorm;
+        if(isAchRed)applyRedBoldStyle(cell);
+        else applyNormal(cell);
+      }
+      previewRows.push(row.map((v,i)=>{
+        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
+        return v;
+      }));
+      exRow++;
+    }
+
+    for(const row of totalRows){
+      for(let c=0;c<nc;c++){
+        const cell=xws.getCell(exRow,c+1);
+        let raw=row[c];
+        const isAchCol=(achIdx>=0&&c===achColInRow);
+        if(isAchCol&&raw!=null){cell.value=normAch(raw);cell.numFmt='0%'}
+        else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
+        else{cell.value=raw!=null?raw:''}
+        applyTotal(cell);
+      }
+      previewRows.push(row.map((v,i)=>{
+        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
+        return v;
+      }));
+      exRow++;
+    }
+
+    if(achIdx>=0&&regionRows.length>0){
+      const regHdrRows=[],regDataRows=[],regTotRows=[];
+      for(const row of regionRows){
+        const bn=(row[0]||'').toString().trim();
+        if(/^total$/i.test(bn))regTotRows.push(row);
+        else if(/region/i.test(bn))regHdrRows.push(row);
+        else regDataRows.push(row);
+      }
+      regDataRows.sort((a,b)=>normAch(b[achColInRow])-normAch(a[achColInRow]));
+      regionRows.length=0;
+      for(const r of regHdrRows)regionRows.push(r);
+      for(const r of regDataRows)regionRows.push(r);
+      for(const r of regTotRows)regionRows.push(r);
+    }
+
+    for(const row of regionRows){
+      const bnStr=(row[0]||'').toString().trim();
+      const isRegHdr=/region/i.test(bnStr);
+      const isRegTot=/^total$/i.test(bnStr);
+      const isRowRed=!isRegHdr&&!isRegTot&&tAchNorm!==null&&achIdx>=0&&normAch(row[achColInRow])<=tAchNorm;
+      for(let c=0;c<nc;c++){
+        const cell=xws.getCell(exRow,c+1);
+        let raw=row[c];
+        const isAchCol=(achIdx>=0&&c===achColInRow);
+        if(isAchCol&&raw!=null&&!isRegHdr){cell.value=normAch(raw);cell.numFmt='0%'}
+        else if(isAchCol&&isRegHdr){cell.value='Ach %'}
+        else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
+        else{cell.value=raw!=null?raw:''}
+        if(isRegHdr||isRegTot)applyTotal(cell);
+        else if(isRowRed&&isAchCol)applyRedBoldStyle(cell);
+        else applyNormal(cell);
+      }
+      previewRows.push(row.map((v,i)=>{
+        if(achIdx>=0&&i===achColInRow&&isRegHdr)return 'Ach %';
+        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
+        return v;
+      }));
+      exRow++;
+    }
+
+    xws.getColumn(1).width=28;
+    for(let c=2;c<=nc;c++)xws.getColumn(c).width=14;
+
+    xws.getRow(1).height=22;
+    xws.getRow(2).height=18;
+
+    previewData.push({name:prod.sheet,title:prod.label,headers:hdrVals,rows:previewRows,achIdx:achColInRow,tAchNorm:totalRows.length&&achIdx>=0?normAch(totalRows[0][achColInRow]):null});
+
+    totalSheets++;
+    maxBranches=Math.max(maxBranches,branchRows.length);
+    totalRed+=sheetRed;
+  }
+
+  (async()=>{
+    window._outExcelBuf=await outWb.xlsx.writeBuffer();
+    const outFile=getToday()+'.xlsx';
+
+    document.getElementById('kSh').textContent=totalSheets;
+    document.getElementById('kBr').textContent=maxBranches;
+    document.getElementById('kRd').textContent=totalRed;
+    document.getElementById('kSt').textContent='DONE';
+    document.getElementById('kSt').style.color='var(--ok)';
+    setLogStatus('Complete — '+totalSheets+' sheets ready','done');
+    document.getElementById('dlT').textContent=totalSheets+' sheets built, '+totalRed+' red-flagged';
+    document.getElementById('dlM').textContent='Borders · Red headers · Center · Ach% desc · Region data included';
+    document.getElementById('dlF').textContent=outFile;
+    document.getElementById('dlSec').classList.add('show');
+
+    renderPreview();
+  })();
+}
+
+function renderPreview(){
+  const wrap=document.getElementById('preWrap');
+  const tabs=document.getElementById('preTabs');
+  const body=document.getElementById('preBody');
+  tabs.innerHTML='';body.innerHTML='';
+  if(!previewData.length){wrap.classList.remove('show');return}
+  wrap.classList.add('show');
+
+  previewData.forEach((sh,idx)=>{
+    const tab=document.createElement('div');
+    tab.className='pretab'+(idx===0?' active':'');
+    tab.textContent=sh.name;
+    tab.onclick=()=>{
+      tabs.querySelectorAll('.pretab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      renderPreviewSheet(idx);
+    };
+    tabs.appendChild(tab);
+  });
+  renderPreviewSheet(0);
+}
+
+function renderPreviewSheet(idx){
+  const sh=previewData[idx];
+  const body=document.getElementById('preBody');
+  let html='<table class="xt"><tr class="xtitle"><td colspan="'+sh.headers.length+'">'+sh.title+'</td></tr>';
+  html+='<tr class="xhdr">';
+  for(const h of sh.headers)html+='<td>'+h+'</td>';
+  html+='</tr>';
+  for(const row of sh.rows){
+    const bn=String(row[0]||'');
+    const isTotal=/^total$/i.test(bn);
+    const isReg=/region/i.test(bn);
+    const isRed=sh.tAchNorm!==null&&sh.achIdx>=0&&row[sh.achIdx]!=null&&typeof row[sh.achIdx]==='number'&&row[sh.achIdx]<=sh.tAchNorm;
+    let cls='xdata';
+    if(isTotal)cls='xtot';
+    else if(isReg)cls='xreg';
+    else if(isRed)cls='xred';
+    html+='<tr class="'+cls+'">';
+    for(let c=0;c<row.length;c++){
+      let v=row[c];
+      let tdCls=c===0?'xl':'';
+      if(c===sh.achIdx)tdCls+=' xach';
+      if(v==null)v='';
+      else if(c===sh.achIdx&&typeof v==='number')v=Math.round(normAch(v)*100)+'%';
+      else if(typeof v==='number')v=v.toLocaleString('en-IN');
+      html+='<td class="'+tdCls+'">'+v+'</td>';
+    }
+    html+='</tr>';
+  }
+  html+='</table>';
+  body.innerHTML=html;
+}
+
+function fail(msg){setLogStatus('Error','fail');log(msg,'err');
+  document.getElementById('kSt').textContent='ERR';document.getElementById('kSt').style.color='var(--er)';
+  document.getElementById('uDot').className='d er'}
+
+const zone=document.getElementById('dropZone'),inp=document.getElementById('fileInput');
+inp.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0])});
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag')});
+zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0])});
+document.getElementById('genBtn').addEventListener('click',generateReport);
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  if(!window._outExcelBuf){log('No workbook in memory yet — hit Generate first','err');return}
+  const blob=new Blob([window._outExcelBuf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const fname=getToday()+'.xlsx';
+  try{
+    const a=document.createElement('a');
+    a.href=url;a.download=fname;a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }catch(e){
+    log('Direct download failed ('+e.message+') — opening file in a new tab instead, use the browser Save/Download button there','warn');
+    window.open(url,'_blank');
+  }
+});
+</script>
+</body>
+</html>
