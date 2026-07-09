@@ -282,13 +282,22 @@ function doGenerate(){
     }
 
     const data=[];
+    const junkGp={}; // branch → {spSum, gpWeighted} — junk rows' GP contribution only
     for(let i=hS+1;i<S.sales.length;i++){
       const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
-      if(isJunk(emp))continue;
-      const sp=parseFloat(r[2])||0;
       let br='';
       if(r[18]&&String(r[18]).trim())br=String(r[18]).trim();
       if(!br)continue;
+      const sp=parseFloat(r[2])||0;
+      const gp=gpColIdx>=0?parsePctVal(r[gpColIdx]):null;
+      if(isJunk(emp)){
+        if(gp!==null&&sp>0){
+          if(!junkGp[br])junkGp[br]={spSum:0,gpWeighted:0};
+          junkGp[br].spSum+=sp;
+          junkGp[br].gpWeighted+=gp*sp;
+        }
+        continue; // junk stays out of employee list, sales & EW totals — GP% only
+      }
       // Check prefix matches branch
       const m=emp.match(/^([A-Za-z]+\d+)-/);
       if(m){
@@ -297,7 +306,6 @@ function doGenerate(){
         if(expectedBr&&expectedBr!==br)continue; // wrong branch — skip
       }
       const ew=wm[emp]!==undefined?wm[emp]:0;
-      const gp=gpColIdx>=0?parsePctVal(r[gpColIdx]):null;
       data.push({emp,sp,br,ew,pct:sp>0?ew/sp:0,gp});
     }
     if(!data.length){showErr('No data found. Check columns.');return}
@@ -306,9 +314,17 @@ function doGenerate(){
       if(!branches[r.br])branches[r.br]=[];branches[r.br].push(r);
     });
     Object.keys(branches).forEach(b=>branches[b].sort((a,b)=>b.pct-a.pct));
-    S.report={data,branches,hasGp:gpColIdx>=0};
+    S.report={data,branches,hasGp:gpColIdx>=0,junkGp};
     render(data,branches);
   }catch(e){showErr(e.message);console.error(e)}
+}
+
+function branchGP(b,br,bSP){
+  let numer=br.reduce((s,r)=>s+(r.gp||0)*r.sp,0);
+  let denom=bSP;
+  const jg=S.report&&S.report.junkGp&&S.report.junkGp[b];
+  if(jg){numer+=jg.gpWeighted;denom+=jg.spSum}
+  return denom>0?numer/denom:null;
 }
 
 function render(data,branches){
@@ -376,8 +392,8 @@ function render(data,branches){
       return bk.map(b=>{
         const br=branches[b],bSP=br.reduce((s,r)=>s+r.sp,0),bEW=br.reduce((s,r)=>s+r.ew,0),bP=bSP>0?bEW/bSP:0;
         let bGP=null;
-        if(showGp&&bSP>0){
-          bGP=br.reduce((s,r)=>s+(r.gp||0)*r.sp,0)/bSP;
+        if(showGp){
+          bGP=branchGP(b,br,bSP);
         }
         return`<div class="bsec">
           <div class="bhdr"><span>${b}</span><small>${br.length} employees</small></div>
@@ -752,8 +768,10 @@ function exportExcel(){
     const pctFormula=`=IFERROR(${ewCol}${totalRowNum}/${spCol}${totalRowNum},0)`;
     const totalCells=[{v:'TOTAL',t:'s',s:colHdr()}];
     if(showGp){
-      const gpFormula=`=IFERROR(SUMPRODUCT(${gpCol}${dataStartRow}:${gpCol}${dataEndRow},${spCol}${dataStartRow}:${spCol}${dataEndRow})/${spCol}${totalRowNum},0)`;
-      totalCells.push({v:gpFormula,t:'n',z:'0.00%',f:gpFormula.slice(1),s:colHdr()});
+      // Static value (not a formula) so it matches the dashboard exactly — includes junk rows' GP contribution, which aren't on this sheet
+      const bSPforGp=br.reduce((s,r)=>s+r.sp,0);
+      const gpVal=branchGP(b,br,bSPforGp)??0;
+      totalCells.push({v:gpVal,t:'n',z:'0.00%',s:colHdr()});
     }
     totalCells.push({v:spSum,t:'n',z:'#,##0',f:spSum.slice(1),s:colHdr()});
     totalCells.push({v:ewSum,t:'n',z:'#,##0',f:ewSum.slice(1),s:colHdr()});
