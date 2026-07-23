@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Warranty Report</title>
+<link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--R:#FF0000;--RD:#CC0000;--RL:#FF0000;--W:#fff;--BG:#F3F4F6;--TX:#111827;--MU:#6B7280;--BD:#E5E7EB}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--BG);color:var(--TX);font-size:13px;min-height:100vh;font-weight:500}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#1e293b 0%,#334155 100%);border-bottom:3px solid var(--R);padding:0 16px;display:flex;align-items:center;gap:10px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.logo{width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:6px;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+header h1{font-size:.95rem;font-weight:700;color:#fff}
+.hbadge{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:600;border:1px solid rgba(255,255,255,.25);white-space:nowrap;backdrop-filter:blur(8px)}
+
+
+/* UPLOAD */
+.upload-wrap{background:var(--W);border-bottom:1px solid var(--BD);padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.upload-box{flex:1;min-width:160px}
+.upload-box label{display:block;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--MU);margin-bottom:4px}
+.btn-wrap{display:flex;gap:10px;align-items:flex-end}
+.fdrop{border:1.5px dashed var(--BD);border-radius:7px;padding:8px 11px;cursor:pointer;display:flex;align-items:center;gap:8px;background:#FAFAFA;transition:.15s}
+.fdrop:hover,.fdrop:active{border-color:var(--R);background:#FFF5F5}
+.fdrop.ok{border:1.5px solid var(--R);background:#FFF5F5}
+.fdrop span{font-size:.76rem;color:var(--MU);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fdrop.ok span{color:var(--R);font-weight:600}
+input[type=file]{display:none}
+.hint{font-size:.6rem;color:var(--MU);margin-top:2px}
+.btn{border:none;padding:0 18px;height:36px;font-size:.78rem;font-weight:700;letter-spacing:.4px;border-radius:7px;cursor:pointer;transition:.15s;text-transform:uppercase;white-space:nowrap}
+.btn-p{background:var(--R);color:#fff}.btn-p:hover{background:#CC0000}.btn-p:disabled{background:var(--BD);color:var(--MU);cursor:not-allowed}
+.btn-o{background:var(--W);color:var(--R);border:1.5px solid var(--R);display:none}.btn-o:hover{background:var(--R);color:#fff}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h2{font-size:.95rem;font-weight:700;color:var(--R);margin-bottom:4px}
+.modal p{font-size:.72rem;color:var(--MU);margin-bottom:12px}
+.mfile{font-size:.8rem;font-weight:600;background:var(--BG);padding:7px 10px;border-radius:5px;border-left:3px solid var(--R);margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ropts{display:flex;gap:8px;flex-wrap:wrap}
+.ropt{flex:1;min-width:130px;border:1.5px solid var(--BD);border-radius:8px;padding:12px;cursor:pointer;text-align:center;transition:.15s}
+.ropt:hover{border-color:var(--R);background:#FFF5F5}
+.ropt h3{font-size:.83rem;font-weight:700;margin-bottom:2px}
+.ropt p{font-size:.65rem;color:var(--MU)}
+
+/* TABS */
+.tabs{background:var(--W);border-bottom:1px solid var(--BD);display:flex;overflow-x:auto;padding:0 16px}
+.tab{padding:10px 14px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;color:var(--MU);transition:.15s}
+.tab:hover{color:var(--R)}.tab.active{color:var(--R);border-bottom-color:var(--R)}
+
+.content{padding:16px}
+.panel{display:none}.panel.active{display:block}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--W);border-top:4px solid #FF0000;padding:12px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.kpi .v{font-size:1.3rem;font-weight:800;color:#FF0000;line-height:1.2}
+.kpi .l{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#444;margin-top:4px}
+
+/* Branch cards */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.bcard{background:var(--W);border-radius:7px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bch{background:var(--R);color:#fff;padding:7px 12px;display:flex;justify-content:space-between;align-items:center}
+.bch span{font-size:.88rem;font-weight:800}
+.bch small{font-size:.65rem;background:rgba(255,255,255,.2);padding:1px 7px;border-radius:10px;font-weight:700}
+.bcb{padding:8px 12px}
+.bcs{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid #F3F4F6;font-weight:600;color:#111}
+.bcs:last-child{border:none;font-weight:800}
+.rl{color:var(--RL);font-weight:700}
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-row.single{grid-template-columns:1fr}
+.cbox{background:var(--W);border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.1);border:1px solid #E5E7EB}
+.cbox h3{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#222;margin-bottom:14px;border-bottom:2px solid #FF0000;padding-bottom:6px}
+.cbox canvas{max-height:280px}
+@media(max-width:640px){.chart-row{grid-template-columns:1fr}}
+
+/* TABLES — exact image style */
+.tw{overflow-x:auto;border-radius:0 0 6px 6px;border:1px solid var(--BD)}
+table{border-collapse:collapse;width:100%;font-size:.78rem;background:#fff;border:2px solid #D1D5DB}
+th{background:#FF0000;color:#fff;padding:7px 9px;text-align:center;font-weight:700;white-space:nowrap;border:1px solid #CC0000}
+th.l{text-align:left}
+td{padding:5px 9px;border:1px solid #D1D5DB;color:#000;background:#fff;white-space:nowrap}
+td.r{text-align:right}
+tr:hover td{background:#FFF5F5!important}
+.tfoot td{background:#FF0000!important;color:#fff!important;font-weight:700;border:1px solid #CC0000!important}
+
+.bsec{margin-bottom:20px}
+.bhdr{background:var(--R);color:#fff;padding:7px 12px;font-size:.85rem;font-weight:700;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center}
+.bhdr small{font-size:.62rem;background:rgba(255,255,255,.2);padding:1px 7px;border-radius:10px}
+
+.ph{text-align:center;padding:60px 16px;color:var(--MU)}
+.ph h2{font-size:1.1rem;font-weight:700;color:var(--TX);margin-bottom:6px}
+.ph p{font-size:.78rem}
+.err{background:#FEF2F2;border:1px solid #FECACA;color:var(--R);padding:8px 14px;border-radius:6px;margin:0 16px 10px;font-size:.76rem;display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h13" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+  <h1>Warranty Report</h1>
+<nav style="display:flex;gap:4px;margin-left:18px">
+    <a href="index.html" class="active" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#FF0000;color:#fff;letter-spacing:.5px;">Home</a>
+    <a href="leads.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Leads</a>
+    <a href="he.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">High End</a>
+    <a href="https://ai-sigma-lac.vercel.app/" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">AI</a>
+    <a href="https://rocklinks.github.io/new-scrape-rev/" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Reviews</a>
+</nav>
+  <span class="hbadge">Region-wise · Dashboard</span>
+</header>
+
+<!-- THRESHOLD MODAL -->
+<div class="ov" id="tov">
+  <div class="modal" style="max-width:340px">
+    <h2>Set EW% Threshold</h2>
+    <p>Entries below this % will be highlighted in red</p>
+    <div style="margin:14px 0">
+      <label style="font-size:.72rem;font-weight:700;color:var(--MU);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Threshold %</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="tval" value="3" min="0" max="100" step="0.1"
+          style="flex:1;padding:9px 12px;border:1.5px solid var(--BD);border-radius:7px;font-size:1rem;font-weight:700;color:var(--TX);outline:none;text-align:center"
+          onfocus="this.style.borderColor='#FF0000'" onblur="this.style.borderColor='var(--BD)'">
+        <span style="font-size:1rem;font-weight:700;color:var(--MU)">%</span>
+      </div>
+      <div style="font-size:.65rem;color:var(--MU);margin-top:5px">Default is 3%. Change if your target differs today.</div>
+    </div>
+    <div style="margin:14px 0;display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px">
+      <input type="checkbox" id="gpToggle" style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer" onchange="document.getElementById('gpThreshWrap').style.display=this.checked?'block':'none'">
+      <label for="gpToggle" style="font-size:.75rem;font-weight:700;color:var(--TX);cursor:pointer">Enable GP% (Branch Wise)</label>
+    </div>
+    <div id="gpThreshWrap" style="display:none;margin:0 0 14px">
+      <label style="font-size:.72rem;font-weight:700;color:var(--MU);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">GP% Threshold</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="gpTval" value="10" min="0" max="100" step="0.1"
+          style="flex:1;padding:9px 12px;border:1.5px solid var(--BD);border-radius:7px;font-size:1rem;font-weight:700;color:var(--TX);outline:none;text-align:center"
+          onfocus="this.style.borderColor='#FF0000'" onblur="this.style.borderColor='var(--BD)'">
+        <span style="font-size:1rem;font-weight:700;color:var(--MU)">%</span>
+      </div>
+      <div style="font-size:.65rem;color:var(--MU);margin-top:5px">Sales GP% below this will be highlighted red.</div>
+    </div>
+    <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="confirmThreshold()">Apply & Generate</button>
+  </div>
+</div>
+
+<!-- FLAGS EXPORT MODAL -->
+<div class="ov" id="fov">
+  <div class="modal" style="max-width:360px">
+    <h2>Flags Sheet Options</h2>
+    <p>Pick which lists to include in the "Flags" sheet</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0">
+      <label style="display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px;cursor:pointer">
+        <input type="checkbox" id="fNegGP" checked style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer">
+        <span style="font-size:.75rem;font-weight:700;color:var(--TX)">Negative GP% (Sales GP% ≤ 0)</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px;cursor:pointer">
+        <input type="checkbox" id="fGPThresh" style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer">
+        <span style="font-size:.75rem;font-weight:700;color:var(--TX)" id="fGPThreshLabel">GP% below threshold</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px;cursor:pointer">
+        <input type="checkbox" id="fZeroEW" checked style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer">
+        <span style="font-size:.75rem;font-weight:700;color:var(--TX)">0% Warranty (EW = 0)</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px;cursor:pointer">
+        <input type="checkbox" id="fAchThresh" style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer">
+        <span style="font-size:.75rem;font-weight:700;color:var(--TX)" id="fAchThreshLabel">Ach% ≤ threshold</span>
+      </label>
+    </div>
+    <div style="font-size:.62rem;color:var(--MU);margin-bottom:10px">GP%/Ach% thresholds use the values entered before generating.</div>
+    <button class="btn btn-p" style="width:100%" onclick="confirmFlagsExport()">Generate Excel</button>
+  </div>
+</div>
+
+<div class="upload-wrap">
+  <div class="upload-box">
+    <label>Sales File</label>
+    <div class="fdrop" id="sd" onclick="document.getElementById('si').click()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <span id="sl">Upload Excel…</span>
+    </div>
+    <input type="file" id="si" accept=".xlsx,.xls" onchange="handleUpload(this,'sales')">
+  </div>
+  <div class="upload-box">
+    <label>Warranty File</label>
+    <div class="fdrop" id="wd" onclick="document.getElementById('wi').click()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <span id="wl">Upload Excel…</span>
+    </div>
+    <input type="file" id="wi" accept=".xlsx,.xls" onchange="handleUpload(this,'warr')">
+  </div>
+  <div class="btn-wrap">
+    <button class="btn btn-p" id="gb" onclick="generate()" disabled>Generate</button>
+    <button class="btn btn-o" id="eb" onclick="openFlagsModal()" style="display:none">⬇ Save XLSX</button>
+    <button class="btn btn-o" id="db" onclick="downloadDashboard()" style="display:none">📥 DD</button>
+  </div>
+</div>
+
+<div class="err" id="err"></div>
+<div id="app">
+  <div class="ph">
+    <svg width="52" height="52" viewBox="0 0 64 64" fill="none" style="margin-bottom:12px;opacity:.2"><rect x="8" y="8" width="48" height="48" rx="6" stroke="#FF0000" stroke-width="3"/><path d="M20 32h24M20 22h24M20 42h16" stroke="#FF0000" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <h2>Upload both files to begin</h2>
+    <p></p>
+  </div>
+</div>
+
+<script>
+const S={sales:null,warr:null,thresh:0.03,report:null,gpEnabled:false,gpThresh:0.10,bStats:null,_baseOpt:null};
+
+/* ── Region config (replaces AGM) ── */
+const REGION_MAP={
+  'Tuticorin':['tuticorin-1','tuticorin-2','tuticorin1','tuticorin2','thiruchendur','thisayanvilai','eral','udankudi','udangudi'],
+  'Tirunelveli':['tirunelveli-1','tirunelveli1','valliyur','ambasamudram','anjugramam'],
+  'NGR1':['nagercoil','marthandam','thuckalay','colachel','kulasekharam','kulasekaram','monday market','karungal'],
+  'KVT1':['kovilpatti','ramnad','paramakudi','sayalkudi','villathikullam','vilathikulam','sattur','sankarankovil','sankarankoil','kayathar'],
+  'TKS1':['thenkasi-1','thenkasi-2','tenkasi-1','tenkasi-2','thenkasi','tenkasi','surandai','puliyankudi','puliyangudi','sengottai','rajapalayam'],
+  'VNR1':['virudhunagar-1','virudhunagar-2','virudhunagar1','virudhunagar2','virudunagar','aruppukottai','arupukottai','sivakasi']
+};
+const REGION_COLORS={
+  'Tuticorin':'rgba(255,0,0,0.75)','Tirunelveli':'rgba(59,130,246,0.75)',
+  'NGR1':'rgba(16,185,129,0.75)','KVT1':'rgba(245,158,11,0.75)',
+  'TKS1':'rgba(139,92,246,0.75)','VNR1':'rgba(236,72,153,0.75)'
+};
+function getRegion(brName){
+  const bl=brName.toLowerCase().trim();
+  for(const[region,list]of Object.entries(REGION_MAP))
+    if(list.some(k=>bl.includes(k)||k.includes(bl.replace(/\s+/g,''))))return region;
+  return'OTHER';
+}
+
+function handleUpload(input,role){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      S[role]=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(role==='sales'){document.getElementById('sd').classList.add('ok');document.getElementById('sl').textContent='✓ '+f.name}
+      else{document.getElementById('wd').classList.add('ok');document.getElementById('wl').textContent='✓ '+f.name}
+      document.getElementById('gb').disabled=!(S.sales&&S.warr);
+    }catch(e){showErr(e.message)}
+  };
+  r.readAsBinaryString(f);input.value='';
+}
+
+function showErr(m){const e=document.getElementById('err');e.textContent='⚠ '+m;e.style.display='block'}
+function clrErr(){document.getElementById('err').style.display='none'}
+
+function inr(n){
+  n=Math.round(n);const neg=n<0,s=Math.abs(n).toString();
+  if(s.length<=3)return(neg?'-':'')+s;
+  return(neg?'-':'')+s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3);
+}
+function lakh(n){return(n/100000).toFixed(2)+'L'}
+function fp(v){return(v*100).toFixed(2)+'%'}
+function pc(v){const r=v<S.thresh;return`<td style="text-align:center;${r?'color:#FF0000;font-weight:700':''}">${fp(v)}</td>`}
+function ptc(v){return`<td style="text-align:center;background:#FF0000;color:${v<S.thresh?'#ffcccc':'#fff'};font-weight:700;border:1px solid #CC0000">${fp(v)}</td>`}
+
+function findHdr(rows){for(let i=0;i<Math.min(5,rows.length);i++)if(String(rows[i][0]).toLowerCase().includes('sales'))return i;return 0}
+
+function fpOrDash(v){return(v===null||v===undefined)?'-':fp(v)}
+function gpCell(v){
+  if(v===null||v===undefined)return'<td style="text-align:center;border:1px solid #D1D5DB">-</td>';
+  const red=v<S.gpThresh;
+  return`<td style="text-align:center;border:1px solid #D1D5DB;${red?'color:#FF0000;font-weight:700':''}">${fp(v)}</td>`;
+}
+function gpTotCell(v){
+  if(v===null||v===undefined)return'<td style="text-align:center;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">-</td>';
+  const red=v<S.gpThresh;
+  return`<td style="text-align:center;background:#FF0000;color:${red?'#ffcccc':'#fff'};font-weight:700;border:1px solid #CC0000">${fp(v)}</td>`;
+}
+function parsePctVal(v){
+  if(v===''||v===null||v===undefined)return null;
+  let n;
+  if(typeof v==='string'){
+    let s=v.trim().replace(/,/g,'');if(!s)return null;
+    n=parseFloat(s);
+    if(isNaN(n))return null;
+    n=s.includes('%')?n/100:(Math.abs(n)>1?n/100:n);
+  }else if(typeof v==='number'){
+    n=Math.abs(v)>1?v/100:v;
+  }else return null;
+  if(Math.abs(n)>3)return null; // sanity clamp — unrealistic GP%, likely wrong column/cell
+  return n;
+}
+function findGpCol(sheetRows){
+  if(!sheetRows||!sheetRows.length)return 6;
+  const maxRow=Math.min(10,sheetRows.length);
+  let exact=-1,candidate=-1,fallback=-1;
+  outer:
+  for(let r=0;r<maxRow;r++){
+    const row=sheetRows[r]||[];
+    for(let i=0;i<row.length;i++){
+      const raw=String(row[i]||'').trim();if(!raw)continue;
+      const low=raw.toLowerCase();
+      const norm=low.replace(/\s+/g,'');
+      if(norm==='salesgp%'||norm==='salesgp'||norm==='gp%'||norm==='gp'){exact=i;break outer}
+      const hasGpWord=/\bgp\b/.test(low)||norm.includes('gp%')||norm.includes('salesgp');
+      if(hasGpWord&&raw.includes('%')&&candidate<0)candidate=i;
+      if(hasGpWord&&fallback<0)fallback=i;
+    }
+  }
+  if(exact>=0)return exact;
+  if(candidate>=0)return candidate;
+  if(fallback>=0)return fallback;
+  return 6; // nothing matched anywhere in first 10 rows → last resort: assume column G
+}
+
+function generate(){
+  document.getElementById('tov').classList.add('show');
+}
+function confirmThreshold(){
+  const t=parseFloat(document.getElementById('tval').value);
+  S.thresh=(isNaN(t)?3:t)/100;
+  S.gpEnabled=document.getElementById('gpToggle').checked;
+  const gpt=parseFloat(document.getElementById('gpTval').value);
+  S.gpThresh=(isNaN(gpt)?10:gpt)/100;
+  document.getElementById('tov').classList.remove('show');
+  doGenerate();
+}
+function doGenerate(){
+  clrErr();
+  try{
+    const hS=findHdr(S.sales),hW=findHdr(S.warr);
+    const gpColIdx=6; // Column G in Sales file = Sales GP% (fixed)
+    const wm={};
+    for(let i=hW+1;i<S.warr.length;i++){const r=S.warr[i],e=String(r[0]||'').trim();if(e)wm[e]=parseFloat(r[2])||0}
+    function isJunk(emp){
+      const n=emp.toUpperCase();
+      return n.includes('EXPO')||n.includes('TRANSFER')||n.includes('-SD ')||n.includes('NO SALES EMPLOYEE');
+    }
+
+    // Build prefix→branch map dynamically from the data itself
+    // First pass: collect all emp+branch pairs, map prefix to branch
+    const prefixMap={};
+    for(let i=hS+1;i<S.sales.length;i++){
+      const r=S.sales[i];
+      const emp=String(r[0]||'').trim();
+      const br=String(r[18]||'').trim();
+      if(!emp||!br)continue;
+      const m=emp.match(/^([A-Za-z]+\d+)-/); // e.g. TCN1, MAR1, ASM1
+      if(!m)continue;
+      const code=m[1].toUpperCase();
+      if(!prefixMap[code])prefixMap[code]=br; // first seen = correct branch
+    }
+
+    const data=[];
+    const junkGp={}; // branch → {spSum, gpWeighted} — junk rows' GP contribution only
+    for(let i=hS+1;i<S.sales.length;i++){
+      const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
+      let br='';
+      if(r[18]&&String(r[18]).trim())br=String(r[18]).trim();
+      if(!br)continue;
+      const sp=parseFloat(r[2])||0;
+      const gp=gpColIdx>=0?parsePctVal(r[gpColIdx]):null;
+      if(isJunk(emp)){
+        if(gp!==null&&sp>0){
+          if(!junkGp[br])junkGp[br]={spSum:0,gpWeighted:0};
+          junkGp[br].spSum+=sp;
+          junkGp[br].gpWeighted+=gp*sp;
+        }
+        continue; // junk stays out of employee list, sales & EW totals — GP% only
+      }
+      // Check prefix matches branch
+      const m=emp.match(/^([A-Za-z]+\d+)-/);
+      if(m){
+        const code=m[1].toUpperCase();
+        const expectedBr=prefixMap[code];
+        if(expectedBr&&expectedBr!==br)continue; // wrong branch — skip
+      }
+      const ew=wm[emp]!==undefined?wm[emp]:0;
+      data.push({emp,sp,br,ew,pct:sp>0?ew/sp:0,gp});
+    }
+    if(!data.length){showErr('No data found. Check columns.');return}
+    const branches={};
+    data.forEach(r=>{
+      if(!branches[r.br])branches[r.br]=[];branches[r.br].push(r);
+    });
+    Object.keys(branches).forEach(b=>branches[b].sort((a,b)=>b.pct-a.pct));
+    S.report={data,branches,hasGp:gpColIdx>=0,junkGp};
+    render(data,branches);
+  }catch(e){showErr(e.message);console.error(e)}
+}
+
+function branchGP(b,br,bSP){
+  let numer=br.reduce((s,r)=>s+(r.gp||0)*r.sp,0);
+  let denom=bSP;
+  const jg=S.report&&S.report.junkGp&&S.report.junkGp[b];
+  if(jg){numer+=jg.gpWeighted;denom+=jg.spSum}
+  return denom>0?numer/denom:null;
+}
+
+function render(data,branches){
+  const tSP=data.reduce((s,r)=>s+r.sp,0),tEW=data.reduce((s,r)=>s+r.ew,0),tPct=tSP>0?tEW/tSP:0;
+  const b3=data.filter(r=>r.pct<S.thresh).length;
+  const asc=[...data].sort((a,b)=>b.pct-a.pct);
+  const bk=Object.keys(branches).sort();
+  const TD='style="text-align:center;border:1px solid #D1D5DB"';
+  const TDR='style="text-align:right;border:1px solid #D1D5DB"';
+  const TDL='style="text-align:left;border:1px solid #D1D5DB"';
+  const TFOOT=(v,align='center')=>`style="text-align:${align};background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000" `;
+
+  document.getElementById('app').innerHTML=`
+  <div class="tabs">
+    <div class="tab active" onclick="sw('dash',this)">📊 Dashboard</div>
+    <div class="tab" onclick="sw('all',this)">All Employees</div>
+    <div class="tab" onclick="sw('branch',this)">Branch Wise</div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="panel active content" id="p-dash">
+    <div class="krow">
+      <div class="kpi"><div class="v">${data.length}</div><div class="l">Employees</div></div>
+      <div class="kpi"><div class="v">${bk.length}</div><div class="l">Branches</div></div>
+      <div class="kpi"><div class="v">₹${lakh(tSP)}</div><div class="l">Total Sales</div></div>
+      <div class="kpi"><div class="v">₹${lakh(tEW)}</div><div class="l">Total EW</div></div>
+      <div class="kpi"><div class="v">${fp(tPct)}</div><div class="l">EW%</div></div>
+      <div class="kpi"><div class="v" style="color:#FF0000">${b3}</div><div class="l">Below ${(S.thresh*100).toFixed(1)}%</div></div>
+    </div>
+
+    <div class="chart-row single" style="margin-bottom:10px">
+      <div class="cbox" style="padding:10px 18px">
+        <label style="font-size:.7rem;font-weight:700;color:#444;margin-right:8px">Region View:</label>
+        <select id="regionSel" onchange="updateRegionCharts(this.value)" style="padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:6px;font-weight:700;font-size:.78rem">
+          <option value="ALL">All Regions</option>
+          ${Object.keys(REGION_MAP).map(r=>`<option value="${r}">${r}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="cbox"><h3 id="ch2aTitle">Region-wise Sales (₹) & EW (₹)</h3><canvas id="ch2a"></canvas></div>
+      <div class="cbox"><h3 id="ch2bTitle">Region-wise EW% Comparison</h3><canvas id="ch2b"></canvas></div>
+    </div>
+    <div class="chart-row">
+      <div class="cbox"><h3>🏆 Top 5 Branches (Highest EW%)</h3><canvas id="ch3"></canvas></div>
+      <div class="cbox"><h3>⚠ Bottom 5 Branches (Lowest EW%)</h3><canvas id="ch4"></canvas></div>
+    </div>
+    <div class="chart-row single">
+      <div class="cbox"><h3>Branch EW% — All Branches (sorted)</h3><canvas id="ch5" style="max-height:760px"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ALL EMPLOYEES -->
+  <div class="panel content" id="p-all">
+    <div class="tw"><table>
+      <thead><tr><th style="width:28px">#</th><th class="l">Sales Employee</th><th class="l">Branch</th><th>Sales Price</th><th>EW</th><th>%</th></tr></thead>
+      <tbody>${asc.map((r,i)=>`<tr>
+        <td style="text-align:center;border:1px solid #D1D5DB">${i+1}</td>
+        <td style="text-align:left;border:1px solid #D1D5DB">${r.emp}</td>
+        <td style="text-align:left;border:1px solid #D1D5DB">${r.br}</td>
+        <td style="text-align:right;border:1px solid #D1D5DB">${inr(r.sp)}</td>
+        <td style="text-align:right;border:1px solid #D1D5DB">${inr(r.ew)}</td>
+        ${pc(r.pct)}</tr>`).join('')}</tbody>
+      <tr><td colspan="3" style="text-align:center;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">TOTAL</td>
+        <td style="text-align:right;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">${inr(tSP)}</td>
+        <td style="text-align:right;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">${inr(tEW)}</td>
+        ${ptc(tPct)}</tr>
+    </table></div>
+  </div>
+
+  <!-- BRANCH WISE -->
+  <div class="panel content" id="p-branch">
+    ${(()=>{
+      const showGp=S.gpEnabled&&S.report&&S.report.hasGp;
+      return bk.map(b=>{
+        const br=branches[b],bSP=br.reduce((s,r)=>s+r.sp,0),bEW=br.reduce((s,r)=>s+r.ew,0),bP=bSP>0?bEW/bSP:0;
+        let bGP=null;
+        if(showGp){
+          bGP=branchGP(b,br,bSP);
+        }
+        return`<div class="bsec">
+          <div class="bhdr"><span>${b}</span><small>${br.length} employees</small></div>
+          <div class="tw"><table>
+            <thead><tr><th style="width:28px">#</th><th class="l">Sales Employee</th>${showGp?'<th>Sales GP%</th>':''}<th>Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
+            <tbody>${br.map((r,i)=>`<tr>
+              <td style="text-align:center;border:1px solid #D1D5DB">${i+1}</td>
+              <td style="text-align:left;border:1px solid #D1D5DB">${r.emp}</td>
+              ${showGp?`${gpCell(r.gp)}`:''}
+              <td style="text-align:center;border:1px solid #D1D5DB">${inr(r.sp)}</td>
+              <td style="text-align:center;border:1px solid #D1D5DB">${inr(r.ew)}</td>
+              ${pc(r.pct)}</tr>`).join('')}</tbody>
+            <tr><td colspan="2" style="text-align:center;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">TOTAL</td>
+              ${showGp?`${gpTotCell(bGP)}`:''}
+              <td style="text-align:center;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">${inr(bSP)}</td>
+              <td style="text-align:center;background:#FF0000;color:#fff;font-weight:700;border:1px solid #CC0000">${inr(bEW)}</td>
+              ${ptc(bP)}</tr>
+          </table></div>
+        </div>`}).join('')
+    })()}
+  </div>`;
+
+  document.getElementById('eb').style.display='inline-block';
+  document.getElementById('db').style.display='inline-block';
+  setTimeout(()=>drawCharts(data,branches,bk),50);
+}
+
+let _charts=[],_ch2a=null,_ch2b=null;
+function drawCharts(data,branches,bk){
+  _charts.forEach(c=>c.destroy());_charts=[];
+  if(_ch2a){_ch2a.destroy();_ch2a=null}
+  if(_ch2b){_ch2b.destroy();_ch2b=null}
+  Chart.register(ChartDataLabels);
+
+  Chart.defaults.font.weight='700';
+  Chart.defaults.font.size=11;
+  Chart.defaults.color='#111';
+  Chart.defaults.plugins.legend.labels.font={size:11,weight:'700'};
+  Chart.defaults.plugins.legend.labels.color='#111';
+  Chart.defaults.plugins.tooltip.titleFont={size:12,weight:'700'};
+  Chart.defaults.plugins.tooltip.bodyFont={size:11,weight:'600'};
+
+  const bStats=bk.map(b=>{
+    const br=branches[b],sp=br.reduce((s,r)=>s+r.sp,0),ew=br.reduce((s,r)=>s+r.ew,0);
+    return{b,sp,ew,pct:sp>0?ew/sp:0,region:getRegion(b)};
+  });
+  S.bStats=bStats;
+
+  const RED60='rgba(255,0,0,0.7)',GRAY='rgba(100,116,139,0.55)';
+  const baseOpt={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{x:{ticks:{font:{size:12,weight:'800'},color:'#111'},grid:{color:'#F3F4F6'}},
+            y:{ticks:{font:{size:12,weight:'800'},color:'#111'},grid:{color:'#F3F4F6'}}}};
+  S._baseOpt=baseOpt;
+
+  const rs=document.getElementById('regionSel');if(rs)rs.value='ALL';
+  renderRegionView('ALL');
+
+  // ── Top 5 / Bottom 5 (unchanged), colored by region ──
+  const sorted=[...bStats].sort((a,b)=>b.pct-a.pct);
+  const top5=sorted.slice(0,5),bot5=[...sorted].reverse().slice(0,5);
+
+  _charts.push(new Chart(document.getElementById('ch3'),{
+    type:'bar',
+    data:{
+      labels:top5.map(s=>s.b.length>14?s.b.slice(0,13)+'…':s.b),
+      datasets:[{
+        data:top5.map(s=>+(s.pct*100).toFixed(2)),
+        backgroundColor:top5.map(s=>REGION_COLORS[s.region]||GRAY),
+        borderRadius:5,
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:12,weight:'800'}}
+      }]
+    },
+    options:{...baseOpt,indexAxis:'y',
+      layout:{padding:{right:45}},
+      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:12,weight:'800'}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}},
+      plugins:{...baseOpt.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — ${top5[ctx.dataIndex].region}`}}}
+    }
+  }));
+
+  _charts.push(new Chart(document.getElementById('ch4'),{
+    type:'bar',
+    data:{
+      labels:bot5.map(s=>s.b.length>14?s.b.slice(0,13)+'…':s.b),
+      datasets:[{
+        data:bot5.map(s=>+(s.pct*100).toFixed(2)),
+        backgroundColor:bot5.map(s=>s.pct<S.thresh?RED60:GRAY),
+        borderRadius:5,
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:12,weight:'800'}}
+      }]
+    },
+    options:{...baseOpt,indexAxis:'y',
+      layout:{padding:{right:45}},
+      scales:{x:{grid:{color:'#F3F4F6'},ticks:{callback:v=>v+'%',font:{size:12,weight:'800'}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}},
+      plugins:{...baseOpt.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — ${bot5[ctx.dataIndex].region}`}}}
+    }
+  }));
+
+  // ── Chart 5: All branches sorted ──
+  const allSorted=[...bStats].sort((a,b)=>b.pct-a.pct);
+  _charts.push(new Chart(document.getElementById('ch5'),{
+    type:'bar',
+    data:{
+      labels:allSorted.map(s=>s.b),
+      datasets:[{
+        data:allSorted.map(s=>+(s.pct*100).toFixed(2)),
+        backgroundColor:allSorted.map(s=>REGION_COLORS[s.region]||GRAY),
+        borderRadius:3,
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:11,weight:'800'}}
+      }]
+    },
+    options:{...baseOpt,indexAxis:'y',
+      layout:{padding:{right:50}},
+      scales:{x:{display:false},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'},color:'#111',mirror:false}}},
+      plugins:{
+        legend:{display:true,labels:{
+          generateLabels:()=>Object.keys(REGION_MAP).map(r=>({text:r,fillStyle:REGION_COLORS[r],strokeStyle:REGION_COLORS[r],lineWidth:0,fontColor:'#111'})),
+          font:{size:12,weight:'800'},color:'#111',boxWidth:14,padding:12
+        }},
+        tooltip:{callbacks:{label:ctx=>`${ctx.raw}% — ${allSorted[ctx.dataIndex].region}`}},
+        datalabels:{}
+      }
+    }
+  }));
+}
+
+function renderRegionView(sel){
+  const bStats=S.bStats;if(!bStats)return;
+  if(_ch2a){_ch2a.destroy();_ch2a=null}
+  if(_ch2b){_ch2b.destroy();_ch2b=null}
+  let stats,label;
+  if(sel==='ALL'){
+    label='Region-wise';
+    stats=Object.keys(REGION_MAP).map(region=>{
+      const bs=bStats.filter(s=>s.region===region);
+      const sp=bs.reduce((s,r)=>s+r.sp,0),ew=bs.reduce((s,r)=>s+r.ew,0);
+      return{name:region,sp,ew,pct:sp>0?ew/sp:0,color:REGION_COLORS[region]};
+    });
+  }else{
+    label=sel+' — Branches';
+    stats=bStats.filter(s=>s.region===sel).map(s=>({name:s.b,sp:s.sp,ew:s.ew,pct:s.pct,color:REGION_COLORS[sel]}));
+  }
+  document.getElementById('ch2aTitle').textContent=label+' Sales (₹) & EW (₹)';
+  document.getElementById('ch2bTitle').textContent=label+' EW% Comparison';
+  const baseOpt=S._baseOpt;
+
+  // ch2a sorted by its own metric (Sales ₹) descending — was wrongly using pct order before
+  const statsBySales=[...stats].sort((a,b)=>b.sp-a.sp);
+  // ch2b sorted by its own metric (EW%) descending
+  const statsByPct=[...stats].sort((a,b)=>b.pct-a.pct);
+
+  _ch2a=new Chart(document.getElementById('ch2a'),{
+    type:'bar',
+    data:{
+      labels:statsBySales.map(s=>s.name),
+      datasets:[
+        {
+          label:'Sales (₹)',
+          data:statsBySales.map(s=>Math.round(s.sp)),
+          backgroundColor:'#16A34A',
+          borderRadius:5,
+          datalabels:{display:true,anchor:'end',align:'top',
+            formatter:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},
+            color:'#333',font:{size:11,weight:'800'}}
+        },
+        {
+          label:'EW (₹)',
+          data:statsBySales.map(s=>Math.round(s.ew)),
+          backgroundColor:'rgba(30,30,30,0.4)',
+          borderRadius:5,
+          datalabels:{display:true,anchor:'end',align:'top',
+            formatter:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},
+            color:'#111',font:{size:11,weight:'800'}}
+        }
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,layout:{padding:{top:35}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11,weight:'800'}}},
+        y:{grid:{color:'#F3F4F6'},ticks:{callback:v=>{const s=Math.abs(v).toString();return'₹'+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))},font:{size:12,weight:'800'}}}
+      },
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{font:{size:12,weight:'800'},boxWidth:12,padding:10}},
+        tooltip:{callbacks:{label:ctx=>{const v=ctx.raw,s=Math.abs(v).toString();return`${ctx.dataset.label}: ₹`+(s.length<=3?s:s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+s.slice(-3))}}},
+        datalabels:{}
+      }
+    }
+  });
+
+  _ch2b=new Chart(document.getElementById('ch2b'),{
+    type:'bar',
+    data:{
+      labels:statsByPct.map(s=>s.name),
+      datasets:[{
+        data:statsByPct.map(s=>+(s.pct*100).toFixed(2)),
+        backgroundColor:statsByPct.map(s=>s.color),
+        borderRadius:5,borderSkipped:false,
+        datalabels:{display:true,anchor:'end',align:'right',formatter:v=>v+'%',color:'#111',font:{size:11,weight:'800'}}
+      }]
+    },
+    options:{...baseOpt,indexAxis:'y',
+      layout:{padding:{right:50}},
+      scales:{x:{display:false},y:{grid:{display:false},ticks:{font:{size:12,weight:'800'}}}},
+      plugins:{...baseOpt.plugins,tooltip:{callbacks:{label:ctx=>`EW%: ${ctx.raw}%`}}}
+    }
+  });
+}
+function updateRegionCharts(sel){renderRegionView(sel)}
+
+function sw(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('p-'+id).classList.add('active');
+  if(id==='dash'&&S.report){const{data,branches}=S.report;drawCharts(data,branches,Object.keys(branches).sort())}
+}
+
+/* ── EXCEL EXPORT using xlsx-js-style (supports cell styles) ── */
+function downloadDashboard(){
+  const db=document.getElementById('db');
+  db.textContent='⏳ Rendering…';db.disabled=true;
+
+  const dash=document.getElementById('p-dash');
+  const prevPanels=[...document.querySelectorAll('.panel.active')];
+  const prevTabs=[...document.querySelectorAll('.tab.active')];
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  dash.classList.add('active');
+  dash.style.minWidth='1400px';
+
+  // Redraw all charts at high DPR before capture
+  const HD=4;
+  _charts.forEach(c=>{c.options.devicePixelRatio=HD;c.resize();c.draw();});
+  if(_ch2a){_ch2a.options.devicePixelRatio=HD;_ch2a.resize();_ch2a.draw();}
+  if(_ch2b){_ch2b.options.devicePixelRatio=HD;_ch2b.resize();_ch2b.draw();}
+
+  setTimeout(()=>{
+    html2canvas(dash,{
+      scale:HD,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:'#F3F4F6',
+      logging:false,
+      scrollX:0,scrollY:0,
+      windowWidth:dash.scrollWidth,
+      width:dash.scrollWidth,
+      height:dash.scrollHeight
+    }).then(canvas=>{
+      canvas.toBlob(blob=>{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='Warranty_Dashboard_UHD.png';
+        document.body.appendChild(a);a.click();
+        setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
+
+        // Restore
+        dash.style.minWidth='';
+        _charts.forEach(c=>{c.options.devicePixelRatio=window.devicePixelRatio||2;c.resize()});
+        if(_ch2a){_ch2a.options.devicePixelRatio=window.devicePixelRatio||2;_ch2a.resize()}
+        if(_ch2b){_ch2b.options.devicePixelRatio=window.devicePixelRatio||2;_ch2b.resize()}
+        prevPanels.forEach(p=>p.classList.add('active'));
+        prevTabs.forEach(t=>t.classList.add('active'));
+        if(!prevPanels.length){dash.classList.add('active')}
+        else{dash.classList.remove('active')}
+        db.textContent='📥 DD';db.disabled=false;
+      },'image/png',1.0);
+    }).catch(e=>{
+      console.error(e);
+      dash.style.minWidth='';
+      prevPanels.forEach(p=>p.classList.add('active'));
+      prevTabs.forEach(t=>t.classList.add('active'));
+      db.textContent='📥 DD';db.disabled=false;
+      alert('Error: '+e.message);
+    });
+  },800);
+}
+
+function openFlagsModal(){
+  document.getElementById('fGPThreshLabel').textContent='GP% below '+(S.gpThresh*100).toFixed(1)+'%';
+  document.getElementById('fAchThreshLabel').textContent='Ach% ≤ '+(S.thresh*100).toFixed(1)+'%';
+  const gpAvail=S.gpEnabled&&S.report&&S.report.hasGp;
+  document.getElementById('fNegGP').disabled=!gpAvail;
+  document.getElementById('fGPThresh').disabled=!gpAvail;
+  document.getElementById('fov').classList.add('show');
+}
+function confirmFlagsExport(){
+  const opts={
+    negGP:document.getElementById('fNegGP').checked,
+    gpThresh:document.getElementById('fGPThresh').checked,
+    zeroEW:document.getElementById('fZeroEW').checked,
+    achThresh:document.getElementById('fAchThresh').checked
+  };
+  document.getElementById('fov').classList.remove('show');
+  exportExcel(opts);
+}
+
+function exportExcel(flagOpts){
+  if(!S.report)return;
+  const{data,branches}=S.report;
+  const wb={SheetNames:[],Sheets:{}};
+  const R='FFFF0000',RL='FFFF0000',W='FFFFFFFF',K='FF000000',B='FF000000',RB='FFCC0000',DK='FF1E293B';
+  const bt=c=>({style:'thin',color:{rgb:c}});
+  const btM=c=>({style:'medium',color:{rgb:c}});
+  const hdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',wrapText:false},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
+  const colHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:14},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',vertical:'center',wrapText:false},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
+  const colHdrGP=()=>({font:{bold:true,color:{rgb:'FFFFFFFF'},name:'Calibri',sz:14},fill:{patternType:'solid',fgColor:{rgb:'FFFF0000'}},alignment:{horizontal:'center',vertical:'center',wrapText:false},border:{top:{style:'medium',color:{rgb:'FFCC0000'}},bottom:{style:'medium',color:{rgb:'FFCC0000'}},left:{style:'medium',color:{rgb:'FFCC0000'}},right:{style:'medium',color:{rgb:'FFCC0000'}}}});
+  const regHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:16},fill:{patternType:'solid',fgColor:{rgb:DK}},alignment:{horizontal:'center',vertical:'center'},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
+  const dat=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'center',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
+  const datL=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'left',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
+  const N=v=>({v:Math.round(v),t:'n',z:'#,##0'});
+  const P=v=>({v:v,t:'n',z:'0.00%'});
+
+  function cell(val,style){
+    if(val&&typeof val==='object'&&val.v!==undefined)return{...val,s:style};
+    return{v:val??'',t:typeof val==='number'?'n':'s',s:style};
+  }
+  function buildWS(rows,cols){
+    const ws={'!ref':XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length-1,c:cols-1}})};
+    rows.forEach((row,r)=>row.forEach((c,ci)=>{ws[XLSX.utils.encode_cell({r,c:ci})]=c}));
+    return ws;
+  }
+
+  const bk=Object.keys(branches).sort();
+  const showGp=S.gpEnabled&&S.report&&S.report.hasGp;
+  const nCols=showGp?5:4;
+
+  // Shared branch-block builder (used by both sheets)
+  function appendBranchBlock(b,rows,merges,heights,ri){
+    const br=branches[b].filter(r=>{
+      const n=r.emp.toUpperCase();
+      return !n.includes('EXPO')&&!n.includes('TRANSFER')&&!n.includes('-SD ')&&!n.includes('NO SALES EMPLOYEE');
+    });
+    if(!br.length)return ri;
+    const dataStartRow=ri+3,dataEndRow=ri+2+br.length;
+    merges.push({s:{r:ri,c:0},e:{r:ri,c:nCols-1}});
+    rows.push(Array.from({length:nCols},(_,ci)=>ci===0?cell(b,hdr()):cell('',{})));heights.push({hpx:20});ri++;
+    const headCells=showGp
+      ?[cell('Sales Employee',colHdr()),cell('Sales GP%',colHdr()),cell('Sales Price',colHdr()),cell('EW',colHdr()),cell('%',colHdr())]
+      :[cell('Sales Employee',colHdr()),cell('Sales Price',colHdr()),cell('EW',colHdr()),cell('%',colHdr())];
+    rows.push(headCells);heights.push({hpx:28});ri++;
+    br.forEach(r=>{
+      const red=r.pct<S.thresh;
+      const gpRed=showGp&&r.gp!==null&&r.gp!==undefined&&r.gp<S.gpThresh;
+      const rowCells=showGp
+        ?[cell(r.emp,datL(false)),cell(P(r.gp??0),dat(gpRed)),cell(N(r.sp),dat(false)),cell(N(r.ew),dat(false)),cell(P(r.pct),dat(red))]
+        :[cell(r.emp,datL(false)),cell(N(r.sp),dat(false)),cell(N(r.ew),dat(false)),cell(P(r.pct),dat(red))];
+      rows.push(rowCells);heights.push({hpx:18});ri++;
+    });
+    const spCol=showGp?'C':'B',ewCol=showGp?'D':'C';
+    const spSum=`=SUM(${spCol}${dataStartRow}:${spCol}${dataEndRow})`;
+    const ewSum=`=SUM(${ewCol}${dataStartRow}:${ewCol}${dataEndRow})`;
+    const totalRowNum=ri+1;
+    const pctFormula=`=IFERROR(${ewCol}${totalRowNum}/${spCol}${totalRowNum},0)`;
+    const totalCells=[{v:'TOTAL',t:'s',s:colHdr()}];
+    if(showGp){
+      const bSPforGp=br.reduce((s,r)=>s+r.sp,0);
+      const gpVal=branchGP(b,br,bSPforGp)??0;
+      const gpTotRed=gpVal<S.gpThresh;
+      totalCells.push({v:gpVal,t:'n',z:'0.00%',s:colHdrGP()});
+    }
+    totalCells.push({v:spSum,t:'n',z:'#,##0',f:spSum.slice(1),s:colHdr()});
+    totalCells.push({v:ewSum,t:'n',z:'#,##0',f:ewSum.slice(1),s:colHdr()});
+    totalCells.push({v:pctFormula,t:'n',z:'0.00%',f:pctFormula.slice(1),s:colHdr()});
+    rows.push(totalCells);heights.push({hpx:28});ri++;
+    rows.push(Array.from({length:nCols},()=>cell('',{})));heights.push({hpx:8});ri++;
+    return ri;
+  }
+
+  // ── Sheet 1: Region Wise (replaces old "All Employees" flat sheet) ──
+  const s1rows=[],merges1=[],rh1=[];let ri1=0;
+  Object.keys(REGION_MAP).forEach(region=>{
+    const regionBranches=bk.filter(b=>getRegion(b)===region);
+    if(!regionBranches.length)return;
+    merges1.push({s:{r:ri1,c:0},e:{r:ri1,c:nCols-1}});
+    s1rows.push(Array.from({length:nCols},(_,ci)=>ci===0?cell('REGION: '+region,regHdr()):cell('',{})));rh1.push({hpx:24});ri1++;
+    regionBranches.forEach(b=>{ri1=appendBranchBlock(b,s1rows,merges1,rh1,ri1)});
+  });
+  const ws1=buildWS(s1rows,nCols);
+  ws1['!cols']=showGp?[{wch:40},{wch:11},{wch:16},{wch:12},{wch:9}]:[{wch:40},{wch:16},{wch:12},{wch:9}];
+  ws1['!merges']=merges1;ws1['!rows']=rh1;
+  wb.SheetNames.push('Region Wise');wb.Sheets['Region Wise']=ws1;
+
+  // ── Sheet 2: Branch Wise (unchanged content, refactored) ──
+  const s2rows=[],merges2=[],rh2=[];let ri2=0;
+  bk.forEach(b=>{ri2=appendBranchBlock(b,s2rows,merges2,rh2,ri2)});
+  const ws2=buildWS(s2rows,nCols);
+  ws2['!cols']=showGp?[{wch:40},{wch:11},{wch:16},{wch:12},{wch:9}]:[{wch:40},{wch:16},{wch:12},{wch:9}];
+  ws2['!merges']=merges2;ws2['!rows']=rh2;
+  wb.SheetNames.push('Branch Wise');wb.Sheets['Branch Wise']=ws2;
+
+  // ── Sheet 3: Flags — dynamic columns based on checkbox selection ──
+  const fo=flagOpts||{negGP:true,gpThresh:false,zeroEW:true,achThresh:false};
+  const cols3=[];
+  if(fo.negGP){
+    const l=data.filter(r=>S.gpEnabled&&S.report.hasGp&&r.gp!==null&&r.gp!==undefined&&r.gp<=0).map(r=>r.emp).sort((a,b)=>a.localeCompare(b));
+    cols3.push({h:'Negative GP%',list:l});
+  }
+  if(fo.gpThresh){
+    const l=data.filter(r=>S.gpEnabled&&S.report.hasGp&&r.gp!==null&&r.gp!==undefined&&r.gp<S.gpThresh).map(r=>r.emp).sort((a,b)=>a.localeCompare(b));
+    cols3.push({h:'GP% < '+(S.gpThresh*100).toFixed(1)+'%',list:l});
+  }
+  if(fo.zeroEW){
+    const l=data.filter(r=>r.pct===0).map(r=>r.emp).sort((a,b)=>a.localeCompare(b));
+    cols3.push({h:'0% Warranty',list:l});
+  }
+  if(fo.achThresh){
+    const l=data.filter(r=>r.pct<=S.thresh).map(r=>r.emp).sort((a,b)=>a.localeCompare(b));
+    cols3.push({h:'Ach% \u2264 '+(S.thresh*100).toFixed(1)+'%',list:l});
+  }
+  if(!cols3.length)cols3.push({h:'No flags selected',list:[]});
+  const SPACER=2;
+  const totalCols3=cols3.length*1+(cols3.length-1)*SPACER;
+  const colIdx3=[];let ci3=0;
+  cols3.forEach(c=>{colIdx3.push(ci3);ci3+=1+SPACER});
+  const maxLen3=Math.max(1,...cols3.map(c=>c.list.length));
+  const s3rows=[];
+  const headRow=Array.from({length:totalCols3},()=>cell('',{}));
+  cols3.forEach((c,i)=>headRow[colIdx3[i]]=cell(c.h,hdr()));
+  s3rows.push(headRow);
+  for(let i=0;i<maxLen3;i++){
+    const row=Array.from({length:totalCols3},()=>cell('',{}));
+    cols3.forEach((c,ci)=>row[colIdx3[ci]]=cell(c.list[i]||'',datL(false)));
+    s3rows.push(row);
+  }
+  const ws3=buildWS(s3rows,totalCols3);
+  ws3['!cols']=Array.from({length:totalCols3},(_,i)=>colIdx3.includes(i)?{wch:34}:{wch:4});
+  wb.SheetNames.push('Flags');wb.Sheets['Flags']=ws3;
+
+  XLSX.writeFile(wb,'Warranty_Report.xlsx');
+}
+</script>
+</body>
+</html>
