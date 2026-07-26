@@ -164,7 +164,20 @@ function log(msg,type='info'){logIdx++;const b=document.getElementById('lBody'),
 function setLogStatus(t,ds){document.getElementById('lTitle').textContent=t;document.getElementById('lDot').className='d '+(ds==='done'?'ok':ds==='fail'?'er':'on')}
 function cellVal(ws,r,c){const cell=ws[XLSX.utils.encode_cell({r,c})];return cell?cell.v:undefined}
 function mergeTopLeft(ws,r,c){for(const m of(ws['!merges']||[])){if(r>=m.s.r&&r<=m.e.r&&c>=m.s.c&&c<=m.e.c)return cellVal(ws,m.s.r,m.s.c)}return cellVal(ws,r,c)}
-const normAch=v=>{const f=parseFloat(v);if(isNaN(f))return 0;const n=f>1&&f>=10?f/100:f;return Math.round(n*100)/100};
+const normAchRaw=v=>{const f=parseFloat(v);if(isNaN(f))return 0;const n=f>1&&f>=10?f/100:f;return Math.round(n*100)/100};
+function normAchCell(ws,origRow,col){
+  if(origRow==null||col==null)return normAchRaw(undefined);
+  const addr=XLSX.utils.encode_cell({r:origRow,c:col});
+  const cell=ws[addr];
+  if(!cell)return 0;
+  // Excel percent-formatted cells store the raw fraction (e.g. 10 for "1000%", 0.1 for "10%")
+  // and put the correctly-scaled text in .w — trust that first since it can't be ambiguous.
+  if(cell.w&&/%/.test(cell.w)){
+    const f=parseFloat(cell.w.replace(/[^0-9.\-]/g,''));
+    if(!isNaN(f))return Math.round(f)/100;
+  }
+  return normAchRaw(cell.v);
+}
 
 window.addEventListener('DOMContentLoaded',()=>{
   if(typeof XLSX==='undefined'||typeof ExcelJS==='undefined'){
@@ -310,11 +323,11 @@ function generateReport(){
     }
 
     if(firstTotalIdx>=0){
-      for(let i=0;i<firstTotalIdx;i++)branchRows.push(allRawRows[i].row);
-      totalRows.push(allRawRows[firstTotalIdx].row);
-      for(let i=firstTotalIdx+1;i<allRawRows.length;i++)regionRows.push(allRawRows[i].row);
+      for(let i=0;i<firstTotalIdx;i++)branchRows.push({row:allRawRows[i].row,origRow:allRawRows[i].origRow});
+      totalRows.push({row:allRawRows[firstTotalIdx].row,origRow:allRawRows[firstTotalIdx].origRow});
+      for(let i=firstTotalIdx+1;i<allRawRows.length;i++)regionRows.push({row:allRawRows[i].row,origRow:allRawRows[i].origRow});
     } else {
-      for(const item of allRawRows)branchRows.push(item.row);
+      for(const item of allRawRows)branchRows.push({row:item.row,origRow:item.origRow});
     }
 
     log(prod.sheet+': '+branchRows.length+' branches, '+totalRows.length+' total(s), '+regionRows.length+' region rows');
@@ -323,15 +336,21 @@ function generateReport(){
     if(achIdx<0)achIdx=subHeaders.findIndex(h=>/%/.test(h.toString()));
     if(achIdx<0)log(prod.sheet+': no Ach% column matched, headers=['+subHeaders.join(' | ')+']','warn');
     const achColInRow=achIdx+1;
+    const actualAchCol=achIdx>=0?cols[achIdx]:null;
+    function achOf(item){
+      if(achIdx<0)return 0;
+      if(item&&item.origRow!=null&&actualAchCol!=null)return normAchCell(ws,item.origRow,actualAchCol);
+      return normAchRaw(item?item.row[achColInRow]:undefined);
+    }
 
-    if(achIdx>=0)branchRows.sort((a,b)=>normAch(b[achColInRow])-normAch(a[achColInRow]));
+    if(achIdx>=0)branchRows.sort((a,b)=>achOf(b)-achOf(a));
 
     let tAchNorm=null;
-    if(totalRows.length&&achIdx>=0)tAchNorm=normAch(totalRows[0][achColInRow]);
+    if(totalRows.length&&achIdx>=0)tAchNorm=achOf(totalRows[0]);
     log(prod.sheet+': totalAch='+(tAchNorm!==null?(tAchNorm*100).toFixed(0)+'%':'n/a'),tAchNorm!==null?'ok':'wn');
 
     let sheetRed=0;
-    if(tAchNorm!==null&&achIdx>=0){for(const row of branchRows){if(normAch(row[achColInRow])<=tAchNorm)sheetRed++}}
+    if(tAchNorm!==null&&achIdx>=0){for(const item of branchRows){if(achOf(item)<=tAchNorm)sheetRed++}}
 
     const targetIdx=subHeaders.findIndex(h=>/target|tgt/i.test(h.toString()));
     const targetColInRow=targetIdx>=0?targetIdx+1:-1;
@@ -354,39 +373,43 @@ function generateReport(){
 
     let exRow=3;
     const previewRows=[];
-    for(const row of branchRows){
+    for(const item of branchRows){
+      const row=item.row;
+      const achVal=achOf(item);
       for(let c=0;c<nc;c++){
         const cell=xws.getCell(exRow,c+1);
         let raw=row[c];
         const isAchCol=(achIdx>=0&&c===achColInRow);
-        if(isAchCol&&raw!=null){cell.value=normAch(raw);cell.numFmt='0%'}
+        if(isAchCol&&raw!=null){cell.value=achVal;cell.numFmt='0%'}
         else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
         else{cell.value=raw!=null?raw:''}
 
-        const isAchRed=tAchNorm!==null&&achIdx>=0&&isAchCol&&normAch(row[achColInRow])<=tAchNorm;
+        const isAchRed=tAchNorm!==null&&achIdx>=0&&isAchCol&&achVal<=tAchNorm;
         if(isAchRed)applyRedBoldStyle(cell);
         else applyNormal(cell);
       }
       previewRows.push(row.map((v,i)=>{
-        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(achIdx>=0&&i===achColInRow&&v!=null)return achVal;
         if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
         return v;
       }));
       exRow++;
     }
 
-    for(const row of totalRows){
+    for(const item of totalRows){
+      const row=item.row;
+      const achVal=achOf(item);
       for(let c=0;c<nc;c++){
         const cell=xws.getCell(exRow,c+1);
         let raw=row[c];
         const isAchCol=(achIdx>=0&&c===achColInRow);
-        if(isAchCol&&raw!=null){cell.value=normAch(raw);cell.numFmt='0%'}
+        if(isAchCol&&raw!=null){cell.value=achVal;cell.numFmt='0%'}
         else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
         else{cell.value=raw!=null?raw:''}
         applyTotal(cell);
       }
       previewRows.push(row.map((v,i)=>{
-        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(achIdx>=0&&i===achColInRow&&v!=null)return achVal;
         if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
         return v;
       }));
@@ -395,29 +418,31 @@ function generateReport(){
 
     if(achIdx>=0&&regionRows.length>0){
       const regHdrRows=[],regDataRows=[],regTotRows=[];
-      for(const row of regionRows){
-        const bn=(row[0]||'').toString().trim();
-        if(/^total$/i.test(bn))regTotRows.push(row);
-        else if(/region/i.test(bn))regHdrRows.push(row);
-        else regDataRows.push(row);
+      for(const item of regionRows){
+        const bn=(item.row[0]||'').toString().trim();
+        if(/^total$/i.test(bn))regTotRows.push(item);
+        else if(/region/i.test(bn))regHdrRows.push(item);
+        else regDataRows.push(item);
       }
-      regDataRows.sort((a,b)=>normAch(b[achColInRow])-normAch(a[achColInRow]));
+      regDataRows.sort((a,b)=>achOf(b)-achOf(a));
       regionRows.length=0;
-      for(const r of regHdrRows)regionRows.push(r);
-      for(const r of regDataRows)regionRows.push(r);
-      for(const r of regTotRows)regionRows.push(r);
+      for(const it of regHdrRows)regionRows.push(it);
+      for(const it of regDataRows)regionRows.push(it);
+      for(const it of regTotRows)regionRows.push(it);
     }
 
-    for(const row of regionRows){
+    for(const item of regionRows){
+      const row=item.row;
       const bnStr=(row[0]||'').toString().trim();
       const isRegHdr=/region/i.test(bnStr);
       const isRegTot=/^total$/i.test(bnStr);
-      const isRowRed=!isRegHdr&&!isRegTot&&tAchNorm!==null&&achIdx>=0&&normAch(row[achColInRow])<=tAchNorm;
+      const achVal=achOf(item);
+      const isRowRed=!isRegHdr&&!isRegTot&&tAchNorm!==null&&achIdx>=0&&achVal<=tAchNorm;
       for(let c=0;c<nc;c++){
         const cell=xws.getCell(exRow,c+1);
         let raw=row[c];
         const isAchCol=(achIdx>=0&&c===achColInRow);
-        if(isAchCol&&raw!=null&&!isRegHdr){cell.value=normAch(raw);cell.numFmt='0%'}
+        if(isAchCol&&raw!=null&&!isRegHdr){cell.value=achVal;cell.numFmt='0%'}
         else if(isAchCol&&isRegHdr){cell.value='Ach %'}
         else if(targetColInRow>=0&&c===targetColInRow&&raw!=null&&raw!==''){const n=parseFloat(raw);if(!isNaN(n)){cell.value=Math.round(n);cell.numFmt='#,##0'}else{cell.value=String(raw)}}
         else{cell.value=raw!=null?raw:''}
@@ -427,7 +452,7 @@ function generateReport(){
       }
       previewRows.push(row.map((v,i)=>{
         if(achIdx>=0&&i===achColInRow&&isRegHdr)return 'Ach %';
-        if(achIdx>=0&&i===achColInRow&&v!=null)return normAch(v);
+        if(achIdx>=0&&i===achColInRow&&v!=null)return achVal;
         if(targetColInRow>=0&&i===targetColInRow&&v!=null){const n=parseFloat(v);return isNaN(n)?v:Math.round(n)}
         return v;
       }));
@@ -440,7 +465,7 @@ function generateReport(){
     xws.getRow(1).height=22;
     xws.getRow(2).height=18;
 
-    previewData.push({name:prod.sheet,title:prod.label,headers:hdrVals,rows:previewRows,achIdx:achColInRow,tAchNorm:totalRows.length&&achIdx>=0?normAch(totalRows[0][achColInRow]):null});
+    previewData.push({name:prod.sheet,title:prod.label,headers:hdrVals,rows:previewRows,achIdx:achColInRow,tAchNorm:totalRows.length&&achIdx>=0?achOf(totalRows[0]):null});
 
     totalSheets++;
     maxBranches=Math.max(maxBranches,branchRows.length);
@@ -510,7 +535,7 @@ function renderPreviewSheet(idx){
       let tdCls=c===0?'xl':'';
       if(c===sh.achIdx)tdCls+=' xach';
       if(v==null)v='';
-      else if(c===sh.achIdx&&typeof v==='number')v=Math.round(normAch(v)*100)+'%';
+      else if(c===sh.achIdx&&typeof v==='number')v=Math.round(v*100)+'%';
       else if(typeof v==='number')v=v.toLocaleString('en-IN');
       html+='<td class="'+tdCls+'">'+v+'</td>';
     }
