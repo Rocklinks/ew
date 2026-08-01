@@ -353,7 +353,8 @@ function doGenerate(){
     }
 
     const data=[];
-    const junkGp={}; // branch → {spSum, gpWeighted} — junk rows' GP contribution only
+    const junkGp={}; // branch → {spSum, gpWeighted} — junk rows' GP contribution
+    const junkTotals={}; // branch → {sp, ew} — junk rows' Sales & EW contribution (keeps grand total accurate)
     for(let i=hS+1;i<S.sales.length;i++){
       const r=S.sales[i],emp=String(r[0]||'').trim();if(!emp)continue;
       let br='';
@@ -362,12 +363,16 @@ function doGenerate(){
       const sp=parseFloat(r[2])||0;
       const gp=gpColIdx>=0?parsePctVal(r[gpColIdx]):null;
       if(isJunk(emp)){
+        const jew=wm[emp]!==undefined?wm[emp]:0;
+        if(!junkTotals[br])junkTotals[br]={sp:0,ew:0};
+        junkTotals[br].sp+=sp;
+        junkTotals[br].ew+=jew;
         if(gp!==null&&sp>0){
           if(!junkGp[br])junkGp[br]={spSum:0,gpWeighted:0};
           junkGp[br].spSum+=sp;
           junkGp[br].gpWeighted+=gp*sp;
         }
-        continue; // junk stays out of employee list, sales & EW totals — GP% only
+        continue; // junk stays out of employee list — but its Sales/EW/GP still count in totals above
       }
       // Check prefix matches branch
       const m=emp.match(/^([A-Za-z]+\d+)-/);
@@ -385,7 +390,7 @@ function doGenerate(){
       if(!branches[r.br])branches[r.br]=[];branches[r.br].push(r);
     });
     Object.keys(branches).forEach(b=>branches[b].sort((a,b)=>b.pct-a.pct));
-    S.report={data,branches,hasGp:gpColIdx>=0,junkGp};
+    S.report={data,branches,hasGp:gpColIdx>=0,junkGp,junkTotals};
     render(data,branches);
   }catch(e){showErr(e.message);console.error(e)}
 }
@@ -410,20 +415,28 @@ function flagRows(title,rows,valLabel,valFn){
 function flagsPanelHTML(data){
   const showGp=S.gpEnabled&&S.report&&S.report.hasGp;
   const byEmp=(a,b)=>a.emp.localeCompare(b.emp);
+  const byGpDesc=(a,b)=>b.gp-a.gp;
+  const byPctDesc=(a,b)=>b.pct-a.pct;
   let html='';
   if(showGp){
-    const negGP=data.filter(r=>r.gp!==null&&r.gp!==undefined&&r.gp<=0).sort(byEmp);
+    const negGP=data.filter(r=>r.gp!==null&&r.gp!==undefined&&r.gp<=0).sort(byGpDesc);
     html+=flagRows('Negative GP% (Sales GP% ≤ 0)',negGP,'GP%',r=>fp(r.gp));
-    const gpBelow=data.filter(r=>r.gp!==null&&r.gp!==undefined&&r.gp<S.gpThresh).sort(byEmp);
+    const gpBelow=data.filter(r=>r.gp!==null&&r.gp!==undefined&&r.gp<S.gpThresh).sort(byGpDesc);
     html+=flagRows('GP% below '+(S.gpThresh*100).toFixed(1)+'%',gpBelow,'GP%',r=>fp(r.gp));
   }
   const zeroEW=data.filter(r=>r.pct===0).sort(byEmp);
   html+=flagRows('0% Warranty (EW = 0)',zeroEW,null,null);
-  const achBelow=data.filter(r=>r.pct<=S.thresh).sort(byEmp);
+  const achBelow=data.filter(r=>r.pct<=S.thresh).sort(byPctDesc);
   html+=flagRows('Ach% \u2264 '+(S.thresh*100).toFixed(1)+'%',achBelow,'Ach%',r=>fp(r.pct));
   return html;
 }
 
+function branchTotals(b,br){
+  let sp=br.reduce((s,r)=>s+r.sp,0),ew=br.reduce((s,r)=>s+r.ew,0);
+  const jt=S.report&&S.report.junkTotals&&S.report.junkTotals[b];
+  if(jt){sp+=jt.sp;ew+=jt.ew}
+  return{sp,ew};
+}
 function branchGP(b,br,bSP){
   let numer=br.reduce((s,r)=>s+(r.gp||0)*r.sp,0);
   let denom=bSP;
@@ -433,7 +446,9 @@ function branchGP(b,br,bSP){
 }
 
 function render(data,branches){
-  const tSP=data.reduce((s,r)=>s+r.sp,0),tEW=data.reduce((s,r)=>s+r.ew,0),tPct=tSP>0?tEW/tSP:0;
+  let tSP=data.reduce((s,r)=>s+r.sp,0),tEW=data.reduce((s,r)=>s+r.ew,0);
+  if(S.report&&S.report.junkTotals)Object.values(S.report.junkTotals).forEach(jt=>{tSP+=jt.sp;tEW+=jt.ew});
+  const tPct=tSP>0?tEW/tSP:0;
   const b3=data.filter(r=>r.pct<S.thresh).length;
   const asc=[...data].sort((a,b)=>b.pct-a.pct);
   const bk=Object.keys(branches).sort();
@@ -492,7 +507,7 @@ function render(data,branches){
     ${(()=>{
       const showGp=S.gpEnabled&&S.report&&S.report.hasGp;
       return bk.map(b=>{
-        const br=branches[b],bSP=br.reduce((s,r)=>s+r.sp,0),bEW=br.reduce((s,r)=>s+r.ew,0),bP=bSP>0?bEW/bSP:0;
+        const br=branches[b],{sp:bSP,ew:bEW}=branchTotals(b,br),bP=bSP>0?bEW/bSP:0;
         let bGP=null;
         if(showGp){
           bGP=branchGP(b,br,bSP);
@@ -539,7 +554,7 @@ function drawCharts(data,branches,bk){
   Chart.defaults.plugins.tooltip.bodyFont={size:11,weight:'600'};
 
   const bStats=bk.map(b=>{
-    const br=branches[b],sp=br.reduce((s,r)=>s+r.sp,0),ew=br.reduce((s,r)=>s+r.ew,0);
+    const br=branches[b],{sp,ew}=branchTotals(b,br);
     return{b,sp,ew,pct:sp>0?ew/sp:0,region:getRegion(b)};
   });
   S.bStats=bStats;
@@ -845,8 +860,11 @@ function exportExcel(flagOpts){
       rows.push(rowCells);heights.push({hpx:18});ri++;
     });
     const spCol=showGp?'C':'B',ewCol=showGp?'D':'C';
-    const spSum=`=SUM(${spCol}${dataStartRow}:${spCol}${dataEndRow})`;
-    const ewSum=`=SUM(${ewCol}${dataStartRow}:${ewCol}${dataEndRow})`;
+    const jt=S.report&&S.report.junkTotals&&S.report.junkTotals[b];
+    const jSpPart=jt&&jt.sp?`+(${jt.sp})`:'';
+    const jEwPart=jt&&jt.ew?`+(${jt.ew})`:'';
+    const spSum=`=SUM(${spCol}${dataStartRow}:${spCol}${dataEndRow})${jSpPart}`;
+    const ewSum=`=SUM(${ewCol}${dataStartRow}:${ewCol}${dataEndRow})${jEwPart}`;
     const totalRowNum=ri+1;
     const pctFormula=`=IFERROR(${ewCol}${totalRowNum}/${spCol}${totalRowNum},0)`;
     const totalCells=[{v:'TOTAL',t:'s',s:colHdr()}];
@@ -891,12 +909,12 @@ function exportExcel(flagOpts){
   const groups3=[];
   if(fo.negGP){
     const rows=data.filter(r=>S.gpEnabled&&S.report.hasGp&&r.gp!==null&&r.gp!==undefined&&r.gp<=0)
-      .sort((a,b)=>a.emp.localeCompare(b.emp)).map(r=>[r.emp,{v:r.gp,t:'n',z:'0.00%'}]);
+      .sort((a,b)=>b.gp-a.gp).map(r=>[r.emp,{v:r.gp,t:'n',z:'0.00%'}]);
     groups3.push({h:'Negative GP%',valLabel:'GP%',rows});
   }
   if(fo.gpThresh){
     const rows=data.filter(r=>S.gpEnabled&&S.report.hasGp&&r.gp!==null&&r.gp!==undefined&&r.gp<S.gpThresh)
-      .sort((a,b)=>a.emp.localeCompare(b.emp)).map(r=>[r.emp,{v:r.gp,t:'n',z:'0.00%'}]);
+      .sort((a,b)=>b.gp-a.gp).map(r=>[r.emp,{v:r.gp,t:'n',z:'0.00%'}]);
     groups3.push({h:'GP% < '+(S.gpThresh*100).toFixed(1)+'%',valLabel:'GP%',rows});
   }
   if(fo.zeroEW){
@@ -905,7 +923,7 @@ function exportExcel(flagOpts){
   }
   if(fo.achThresh){
     const rows=data.filter(r=>r.pct<=S.thresh)
-      .sort((a,b)=>a.emp.localeCompare(b.emp)).map(r=>[r.emp,{v:r.pct,t:'n',z:'0.00%'}]);
+      .sort((a,b)=>b.pct-a.pct).map(r=>[r.emp,{v:r.pct,t:'n',z:'0.00%'}]);
     groups3.push({h:'Ach% \u2264 '+(S.thresh*100).toFixed(1)+'%',valLabel:'Ach%',rows});
   }
   if(!groups3.length)groups3.push({h:'No flags selected',valLabel:null,rows:[]});
