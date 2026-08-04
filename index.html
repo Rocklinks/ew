@@ -50,6 +50,15 @@ input[type=file]{display:none}
 .ropt h3{font-size:.83rem;font-weight:700;margin-bottom:2px}
 .ropt p{font-size:.65rem;color:var(--MU)}
 
+/* TOGGLE SWITCH */
+.tswitch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;cursor:pointer}
+.tswitch input{opacity:0;width:0;height:0;position:absolute}
+.tslider{position:absolute;inset:0;background:#D1D5DB;border-radius:26px;transition:.2s;pointer-events:none}
+.tslider::before{content:'';position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tswitch input:checked+.tslider{background:#FF0000}
+.tswitch input:checked+.tslider::before{transform:translateX(20px)}
+.tswitch input:focus-visible+.tslider{outline:2px solid #FF0000;outline-offset:2px}
+
 /* TABS */
 .tabs{background:var(--W);border-bottom:1px solid var(--BD);display:flex;overflow-x:auto;padding:0 16px}
 .tab{padding:10px 14px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;color:var(--MU);transition:.15s}
@@ -123,7 +132,7 @@ tr:hover td{background:#FFF5F5!important}
 <!-- THRESHOLD MODAL -->
 <div class="ov" id="tov">
   <div class="modal" style="max-width:340px">
-    <h2>Set EW% Threshold</h2>
+    <h2 style="display:flex;justify-content:space-between">Set EW% Threshold<span onclick="document.getElementById('tov').classList.remove('show')" style="cursor:pointer;color:var(--MU)">✕</span></h2>
     <p>Entries below this % will be highlighted in red</p>
     <div style="margin:14px 0">
       <label style="font-size:.72rem;font-weight:700;color:var(--MU);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Threshold %</label>
@@ -135,9 +144,12 @@ tr:hover td{background:#FFF5F5!important}
       </div>
       <div style="font-size:.65rem;color:var(--MU);margin-top:5px">Default is 3%. Change if your target differs today.</div>
     </div>
-    <div style="margin:14px 0;display:flex;align-items:center;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px">
-      <input type="checkbox" id="gpToggle" style="width:16px;height:16px;accent-color:#FF0000;cursor:pointer" onchange="document.getElementById('gpThreshWrap').style.display=this.checked?'block':'none'">
+    <div style="margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--BG);padding:9px 10px;border-radius:7px">
       <label for="gpToggle" style="font-size:.75rem;font-weight:700;color:var(--TX);cursor:pointer">Enable GP% (Branch Wise)</label>
+      <label class="tswitch">
+        <input type="checkbox" id="gpToggle" onchange="syncGPToggle()">
+        <span class="tslider"></span>
+      </label>
     </div>
     <div id="gpThreshWrap" style="display:none;margin:0 0 14px">
       <label style="font-size:.72rem;font-weight:700;color:var(--MU);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">GP% Threshold</label>
@@ -336,7 +348,12 @@ function findGpCol(sheetRows){
   return 6; // nothing matched anywhere in first 10 rows → last resort: assume column G
 }
 
+function syncGPToggle(){
+  const on=document.getElementById('gpToggle').checked;
+  document.getElementById('gpThreshWrap').style.display=on?'block':'none';
+}
 function generate(){
+  syncGPToggle(); // resync in case checkbox state and threshold box got out of sync
   document.getElementById('tov').classList.add('show');
 }
 function confirmThreshold(){
@@ -942,17 +959,51 @@ function exportExcel(flagOpts){
   ws2['!merges']=merges2;ws2['!rows']=rh2;
   wb.SheetNames.push('Branch Wise');wb.Sheets['Branch Wise']=ws2;
 
-  // ── Sheet 3: Branch Tier — branches grouped by Tier1/2/3 ──
-  const s2Trows=[],merges2T=[],rh2T=[];let ri2T=0;
-  TIER_ORDER.forEach(tier=>{
+  // ── Sheet 3: Branch Tier — Tier1/2/3 side-by-side as separate column blocks ──
+  const TIER_SPACER=2;
+  function buildTierBlock(tier){
+    const rows=[],merges=[],heights=[];let ri=0;
     const tierBranches=bk.filter(b=>getTier(b)===tier);
-    if(!tierBranches.length)return;
-    merges2T.push({s:{r:ri2T,c:0},e:{r:ri2T,c:nCols-1}});
-    s2Trows.push(Array.from({length:nCols},(_,ci)=>ci===0?cell(tier,regHdr()):cell('',{})));rh2T.push({hpx:24});ri2T++;
-    tierBranches.forEach(b=>{ri2T=appendBranchBlock(b,s2Trows,merges2T,rh2T,ri2T)});
+    merges.push({s:{r:0,c:0},e:{r:0,c:nCols-1}});
+    rows.push(Array.from({length:nCols},(_,ci)=>ci===0?cell(tier,regHdr()):cell('',{})));heights.push({hpx:24});ri=1;
+    tierBranches.forEach(b=>{ri=appendBranchBlock(b,rows,merges,heights,ri)});
+    return{rows,merges,heights};
+  }
+  const tierBlocks=TIER_ORDER.map(buildTierBlock);
+  const tierColOffsets=[];let tOff=0;
+  tierBlocks.forEach(()=>{tierColOffsets.push(tOff);tOff+=nCols+TIER_SPACER});
+  const totalColsTier=tOff-TIER_SPACER;
+  const maxRowsTier=Math.max(1,...tierBlocks.map(tb=>tb.rows.length));
+
+  const s2Trows=[];
+  for(let r=0;r<maxRowsTier;r++){
+    let row=[];
+    tierBlocks.forEach((tb,ti)=>{
+      const blockRow=tb.rows[r]||Array.from({length:nCols},()=>cell('',{}));
+      row=row.concat(blockRow);
+      if(ti<tierBlocks.length-1)row=row.concat(Array.from({length:TIER_SPACER},()=>cell('',{})));
+    });
+    s2Trows.push(row);
+  }
+  const merges2T=[];
+  tierBlocks.forEach((tb,ti)=>{
+    const offset=tierColOffsets[ti];
+    tb.merges.forEach(m=>merges2T.push({s:{r:m.s.r,c:m.s.c+offset},e:{r:m.e.r,c:m.e.c+offset}}));
   });
-  const ws2T=buildWS(s2Trows,nCols);
-  ws2T['!cols']=showGp?[{wch:40},{wch:11},{wch:16},{wch:12},{wch:9}]:[{wch:40},{wch:16},{wch:12},{wch:9}];
+  const rh2T=[];
+  for(let r=0;r<maxRowsTier;r++){
+    let h=18;
+    tierBlocks.forEach(tb=>{if(tb.heights[r])h=Math.max(h,tb.heights[r].hpx)});
+    rh2T.push({hpx:h});
+  }
+  const ws2T=buildWS(s2Trows,totalColsTier);
+  const singleColsWidths=showGp?[{wch:40},{wch:11},{wch:16},{wch:12},{wch:9}]:[{wch:40},{wch:16},{wch:12},{wch:9}];
+  let colsArr2T=[];
+  tierBlocks.forEach((tb,ti)=>{
+    colsArr2T=colsArr2T.concat(singleColsWidths);
+    if(ti<tierBlocks.length-1)colsArr2T=colsArr2T.concat(Array.from({length:TIER_SPACER},()=>({wch:3})));
+  });
+  ws2T['!cols']=colsArr2T;
   ws2T['!merges']=merges2T;ws2T['!rows']=rh2T;
   wb.SheetNames.push('Branch Tier');wb.Sheets['Branch Tier']=ws2T;
 
