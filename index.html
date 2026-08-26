@@ -967,9 +967,7 @@ function exportExcel(flagOpts){
   const hdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:SL1}},alignment:{horizontal:'center',wrapText:false},border:{top:btM(SLB),bottom:btM(SLB),left:btM(SLB),right:btM(SLB)}});
   const colHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:14},fill:{patternType:'solid',fgColor:{rgb:SL2}},alignment:{horizontal:'center',vertical:'center',wrapText:false},border:{top:btM(SLB),bottom:btM(SLB),left:btM(SLB),right:btM(SLB)}});
   const colHdrGP=()=>colHdr();
-  const totHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:14},fill:{patternType:'solid',fgColor:{rgb:R}},alignment:{horizontal:'center',vertical:'center',wrapText:false},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
-  const totHdrGP=()=>totHdr();
-  const regHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:16},fill:{patternType:'solid',fgColor:{rgb:DK}},alignment:{horizontal:'center',vertical:'center'},border:{top:btM(RB),bottom:btM(RB),left:btM(RB),right:btM(RB)}});
+  const regHdr=()=>({font:{bold:true,color:{rgb:W},name:'Calibri',sz:16},fill:{patternType:'solid',fgColor:{rgb:DK}},alignment:{horizontal:'center',vertical:'center'},border:{top:btM(SLB),bottom:btM(SLB),left:btM(SLB),right:btM(SLB)}});
   const dat=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'center',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
   const datL=(red)=>({font:{color:{rgb:red?RL:K},bold:red,name:'Calibri',sz:11},fill:{patternType:'solid',fgColor:{rgb:W}},alignment:{horizontal:'left',vertical:'center'},border:{top:bt(B),bottom:bt(B),left:bt(B),right:bt(B)}});
   const N=v=>({v:Math.round(v),t:'n',z:'#,##0'});
@@ -1012,15 +1010,15 @@ function exportExcel(flagOpts){
     });
     const{sp:bSPTot,ew:bEWTot}=branchTotals(b,br);
     const bPctTot=bSPTot>0?bEWTot/bSPTot:0;
-    const totalCells=[{v:'TOTAL',t:'s',s:totHdr()}];
+    const totalCells=[{v:'TOTAL',t:'s',s:colHdr()}];
     if(showGp){
       const bSPforGp=br.reduce((s,r)=>s+r.sp,0);
       const gpVal=branchGP(b,br,bSPforGp)??0;
-      totalCells.push({v:gpVal,t:'n',z:'0.00%',s:totHdrGP()});
+      totalCells.push({v:gpVal,t:'n',z:'0.00%',s:colHdrGP()});
     }
-    totalCells.push({v:Math.round(bSPTot),t:'n',z:'#,##0',s:totHdr()});
-    totalCells.push({v:Math.round(bEWTot),t:'n',z:'#,##0',s:totHdr()});
-    totalCells.push({v:bPctTot,t:'n',z:'0.00%',s:totHdr()});
+    totalCells.push({v:Math.round(bSPTot),t:'n',z:'#,##0',s:colHdr()});
+    totalCells.push({v:Math.round(bEWTot),t:'n',z:'#,##0',s:colHdr()});
+    totalCells.push({v:bPctTot,t:'n',z:'0.00%',s:colHdr()});
     rows.push(totalCells);heights.push({hpx:28});ri++;
     rows.push(Array.from({length:nCols},()=>cell('',{})));heights.push({hpx:8});ri++;
     return ri;
