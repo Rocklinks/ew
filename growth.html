@@ -548,11 +548,18 @@ body{
 <script>
 var ALL_BRANCHES = ["Ambasamudram-1","Anjugramam-1","Aruppukottai","Aruppukottai -2","Colachel-1","Eral-2","Karungal-1","Kayathar-1","Kovilpatti","Kulasekharam-1","Marthandam","Monday Market","Nagercoil","Paramakudi","Puliyankudi-1","Rajapalayam","Ramnad","Ramnad-2","Sankarankovil-1","Sattur-2","Sayalkudi-1","Sengottai-1","Sivakasi","Surandai-1","Thenkasi","Thenkasi-2","Thiruchendur-1","Thisayanvilai-1","Thuckalay-1","Tirunelveli-1","Tuticorin-1","Tuticorin-2","Udankudi","Valliyur-1","Villathikullam","Virudhunagar","Virudhunagar-2"];
 
+/* FIX: sheet header row is
+   0 Branch, 1 ACH%, 2 GROWTH, 3 AIR-COND, 4 MOBILE, 5 LED TV, 6 FRIDGE,
+   7 WASH-MAC, 8 HOME-THE, 9 M+G+G+I, 10 F+Wh+Wp+O, 11 Computer, 12 SA,
+   13 Gadgets, 14 EW
+   Old code read Gadgets from col 12 (that's actually SA) and EW from
+   col 13 (that's actually Gadgets) — everything from Gadgets onward
+   was shifted one column left. Corrected below: Gadgets->13, EW->14. */
 var CATS = [
   {n:'GROWTH',     c:2,  color:'#EA580C',ico:'&#128994;',m:'le0',     pct:false,grp:'metric' },
   {n:'ACH %',      c:1,  color:'#DC2626',ico:'&#128308;',m:'ach',     pct:true, grp:'metric' },
-  {n:'EW',         c:13, color:'#0D9488',ico:'&#128737;&#65039;',m:'ew', pct:true, grp:'metric' },
-  {n:'Gadgets',    c:12, color:'#7C3AED',ico:'&#127911;',m:'gadgets', pct:true, grp:'metric' },
+  {n:'EW',         c:14, color:'#0D9488',ico:'&#128737;&#65039;',m:'ew', pct:true, grp:'metric' },
+  {n:'Gadgets',    c:13, color:'#7C3AED',ico:'&#127911;',m:'gadgets', pct:true, grp:'metric' },
   {n:'AIR-COND',   c:3,  color:'#0284C7',ico:'&#10052;&#65039;', m:'le0', pct:false, grp:'product'},
   {n:'MOBILE',     c:4,  color:'#7C3AED',ico:'&#128241;',m:'le0', pct:false, grp:'product'},
   {n:'LED TV',     c:5,  color:'#D97706',ico:'&#128250;',m:'le0', pct:false, grp:'product'},
@@ -565,6 +572,7 @@ var CATS = [
 ];
 
 var DATA=null;
+var CURWS=null; /* holds the raw worksheet so we can read Excel's own formatted text (.w) — respects each cell's real number format (0% vs 0.00% etc) instead of us guessing decimals */
 
 var dz=document.getElementById('dz');
 dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('over');});
@@ -594,6 +602,7 @@ function go(file){
       var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellStyles:true});
       var ws=wb.Sheets[wb.SheetNames[0]];
       if(!ws) throw new Error('No worksheet found.');
+      CURWS=ws;
       var json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
       if(!json||json.length<5) throw new Error('Not enough data.');
       parse(json);
@@ -620,12 +629,35 @@ function fmtVal(val,cat){
   return String(Math.round(n));
 }
 
+/* json[jsonRow] is offset by the sheet's actual starting row (data
+   begins at A2), so the true 0-based sheet row for encode_cell is
+   jsonRow+1. Returns Excel's own formatted text for that cell (.w),
+   which carries the cell's real number format (0% vs 0.00% etc) —
+   fallback to fmtVal only if the cell/format isn't available. */
+function cellText(jsonRow,colIdx){
+  if(!CURWS) return null;
+  var addr=XLSX.utils.encode_cell({r:jsonRow+1,c:colIdx});
+  var cell=CURWS[addr];
+  return (cell && cell.w!==undefined && cell.w!=='') ? cell.w : null;
+}
+
 function parse(json){
   var tr=json[40]||[];
   var tA=toN(tr[1]);
-  var tM=toN(tr[12]);
+  var tM=toN(tr[13]); /* FIX: Gadgets target lives in col 13, not 12 (SA) */
   var cats={};
+  var totals={};
   for(var i=0;i<CATS.length;i++) cats[CATS[i].n]=[];
+
+  /* category TOTAL row value, shown on each card badge — use Excel's
+     own formatted text for the Total-row cell so it matches the sheet
+     exactly (this is where the badge was pulling the wrong figure) */
+  for(var i=0;i<CATS.length;i++){
+    var cat=CATS[i];
+    var wt=cellText(40,cat.c);
+    totals[cat.n]=wt!==null?wt:fmtVal(tr[cat.c],cat);
+  }
+
   var total=0;
 
   for(var r=2;r<=38;r++){
@@ -647,11 +679,14 @@ function parse(json){
           if(n<=0.03) flag=true;
         }
       }
-      if(flag) cats[cat.n].push({b:b, v:fmtVal(val,cat), n:n});
+      if(flag){
+        var wt=cellText(r,cat.c);
+        cats[cat.n].push({b:b, v:(wt!==null?wt:fmtVal(val,cat)), n:n});
+      }
     }
   }
 
-  DATA={cats:cats,total:total};
+  DATA={cats:cats,total:total,totals:totals};
   document.getElementById('loader').classList.remove('show');
   render();
 }
@@ -724,14 +759,13 @@ function buildCards(c,grp,targetId,doSort){
     var hd=document.createElement('div'); hd.className='card-head';
     var ic=document.createElement('div'); ic.className='card-ico';
     ic.style.color=cat.color; ic.innerHTML=cat.ico;
-    var nw=document.createElement('span'); nw.className='card-name'; nw.textContent=cat.n;
-    if(cat.pct){
-      var pt=document.createElement('span'); pt.className='pct-tag'; pt.textContent='%';
-      nw.appendChild(pt);
-    }
+    /* name + branch count in parens, e.g. "GROWTH (10 branches)" */
+    var nw=document.createElement('span'); nw.className='card-name';
+    nw.textContent=cat.n+' ('+br.length+' branch'+(br.length!==1?'es':'')+')';
+    /* corner badge = category TOTAL value (sheet's Total row) */
     var bdg=document.createElement('span'); bdg.className='card-badge';
     bdg.style.background=br.length>0?cat.color:'#16A34A';
-    bdg.textContent=String(br.length);
+    bdg.textContent=DATA.totals[cat.n];
     hd.appendChild(ic);hd.appendChild(nw);hd.appendChild(bdg); card.appendChild(hd);
 
     var body=document.createElement('div'); body.className='card-body';
@@ -909,7 +943,7 @@ function clearFile(){
   dz.style.display='';
   document.getElementById('file-ok').classList.remove('show');
   document.getElementById('fi').value='';
-  clearRes(); clearErr(); DATA=null;
+  clearRes(); clearErr(); DATA=null; CURWS=null;
 }
 function clearRes(){
   document.getElementById('results').style.display='none';
