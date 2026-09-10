@@ -445,7 +445,7 @@ body{
       <a href="growth.html" class="active">Growth</a>
       <a href="https://rocklinks.github.io/sathya-review-tracker/">Reviews</a>
     </nav>
-    <span class="tb-tag">Red Mark Analysis</span>
+    <span class="tb-tag">Red Mark Analysis · build 2026-09-09-dyncols</span>
   </div>
 </header>
 
@@ -546,33 +546,38 @@ body{
 </div>
 
 <script>
-var ALL_BRANCHES = ["Ambasamudram-1","Anjugramam-1","Aruppukottai","Aruppukottai -2","Colachel-1","Eral-2","Karungal-1","Kayathar-1","Kovilpatti","Kulasekharam-1","Marthandam","Monday Market","Nagercoil","Paramakudi","Puliyankudi-1","Rajapalayam","Ramnad","Ramnad-2","Sankarankovil-1","Sattur-2","Sayalkudi-1","Sengottai-1","Sivakasi","Surandai-1","Thenkasi","Thenkasi-2","Thiruchendur-1","Thisayanvilai-1","Thuckalay-1","Tirunelveli-1","Tuticorin-1","Tuticorin-2","Udankudi","Valliyur-1","Villathikullam","Virudhunagar","Virudhunagar-2"];
+/* Branch list is now read straight from the uploaded sheet each time
+   (see DATA.branches) instead of a fixed list baked into this file —
+   a hardcoded roster would go stale the moment a branch opens, closes,
+   or is renamed. */
 
-/* FIX: sheet header row is
-   0 Branch, 1 ACH%, 2 GROWTH, 3 AIR-COND, 4 MOBILE, 5 LED TV, 6 FRIDGE,
-   7 WASH-MAC, 8 HOME-THE, 9 M+G+G+I, 10 F+Wh+Wp+O, 11 Computer, 12 SA,
-   13 Gadgets, 14 EW
-   Old code read Gadgets from col 12 (that's actually SA) and EW from
-   col 13 (that's actually Gadgets) — everything from Gadgets onward
-   was shifted one column left. Corrected below: Gadgets->13, EW->14. */
+/* Column positions are looked up by matching each category's name
+   against the sheet's own header row at parse time (see parse()) —
+   the ".c" below is just a placeholder, always overwritten. This is
+   the permanent fix for the Gadgets/EW mixup: that bug happened
+   because column numbers were hardcoded and this file's columns
+   didn't match what we assumed. A future month's file can add,
+   remove, or reorder columns and this will still find the right one
+   by name, instead of silently reading the wrong data again. */
 var CATS = [
-  {n:'GROWTH',     c:2,  color:'#EA580C',ico:'&#128994;',m:'le0',     pct:false,grp:'metric' },
-  {n:'ACH %',      c:1,  color:'#DC2626',ico:'&#128308;',m:'ach',     pct:true, grp:'metric' },
-  {n:'EW',         c:14, color:'#0D9488',ico:'&#128737;&#65039;',m:'ew', pct:true, grp:'metric' },
-  {n:'Gadgets',    c:13, color:'#7C3AED',ico:'&#127911;',m:'gadgets', pct:true, grp:'metric' },
-  {n:'AIR-COND',   c:3,  color:'#0284C7',ico:'&#10052;&#65039;', m:'le0', pct:false, grp:'product'},
-  {n:'MOBILE',     c:4,  color:'#7C3AED',ico:'&#128241;',m:'le0', pct:false, grp:'product'},
-  {n:'LED TV',     c:5,  color:'#D97706',ico:'&#128250;',m:'le0', pct:false, grp:'product'},
-  {n:'FRIDGE',     c:6,  color:'#0369A1',ico:'&#129514;',m:'le0', pct:false, grp:'product'},
-  {n:'WASH-MAC',   c:7,  color:'#BE185D',ico:'&#129530;&#65039;',m:'le0', pct:false, grp:'product'},
-  {n:'HOME-THE',   c:8,  color:'#047857',ico:'&#127916;',m:'le0', pct:false, grp:'product'},
-  {n:'M+G+G+I',    c:9,  color:'#4D7C0F',ico:'&#127859;&#65039;',m:'le0', pct:false, grp:'product'},
-  {n:'F+Wh+Wp+O',  c:10, color:'#C2410C',ico:'&#128168;',m:'le0', pct:false, grp:'product'},
-  {n:'Computer',   c:11, color:'#4338CA',ico:'&#128187;',m:'le0', pct:false, grp:'product'}
+  {n:'GROWTH',     c:-1, color:'#EA580C',ico:'&#128994;',m:'le0',     pct:false,grp:'metric' },
+  {n:'ACH %',      c:-1, color:'#DC2626',ico:'&#128308;',m:'ach',     pct:true, grp:'metric' },
+  {n:'EW',         c:-1, color:'#0D9488',ico:'&#128737;&#65039;',m:'ew', pct:true, grp:'metric' },
+  {n:'Gadgets',    c:-1, color:'#7C3AED',ico:'&#127911;',m:'gadgets', pct:true, grp:'metric' },
+  {n:'AIR-COND',   c:-1, color:'#0284C7',ico:'&#10052;&#65039;', m:'le0', pct:false, grp:'product'},
+  {n:'MOBILE',     c:-1, color:'#7C3AED',ico:'&#128241;',m:'le0', pct:false, grp:'product'},
+  {n:'LED TV',     c:-1, color:'#D97706',ico:'&#128250;',m:'le0', pct:false, grp:'product'},
+  {n:'FRIDGE',     c:-1, color:'#0369A1',ico:'&#129514;',m:'le0', pct:false, grp:'product'},
+  {n:'WASH-MAC',   c:-1, color:'#BE185D',ico:'&#129530;&#65039;',m:'le0', pct:false, grp:'product'},
+  {n:'HOME-THE',   c:-1, color:'#047857',ico:'&#127916;',m:'le0', pct:false, grp:'product'},
+  {n:'M+G+G+I',    c:-1, color:'#4D7C0F',ico:'&#127859;&#65039;',m:'le0', pct:false, grp:'product'},
+  {n:'F+Wh+Wp+O',  c:-1, color:'#C2410C',ico:'&#128168;',m:'le0', pct:false, grp:'product'},
+  {n:'Computer',   c:-1, color:'#4338CA',ico:'&#128187;',m:'le0', pct:false, grp:'product'}
 ];
 
 var DATA=null;
-var CURWS=null; /* holds the raw worksheet so we can read Excel's own formatted text (.w) — respects each cell's real number format (0% vs 0.00% etc) instead of us guessing decimals */
+var CURWS=null;    /* raw worksheet — lets us read Excel's own formatted text (.w), so % values always match the sheet's exact format (0% vs 0.00%) instead of us guessing decimals */
+var ROW_OFF=0, COL_OFF=0; /* the sheet's actual starting row/col (data doesn't always start at A1) */
 
 var dz=document.getElementById('dz');
 dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('over');});
@@ -603,6 +608,8 @@ function go(file){
       var ws=wb.Sheets[wb.SheetNames[0]];
       if(!ws) throw new Error('No worksheet found.');
       CURWS=ws;
+      var rng=XLSX.utils.decode_range(ws['!ref']||'A1');
+      ROW_OFF=rng.s.r; COL_OFF=rng.s.c;
       var json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
       if(!json||json.length<5) throw new Error('Not enough data.');
       parse(json);
@@ -629,44 +636,83 @@ function fmtVal(val,cat){
   return String(Math.round(n));
 }
 
-/* json[jsonRow] is offset by the sheet's actual starting row (data
-   begins at A2), so the true 0-based sheet row for encode_cell is
-   jsonRow+1. Returns Excel's own formatted text for that cell (.w),
-   which carries the cell's real number format (0% vs 0.00% etc) —
-   fallback to fmtVal only if the cell/format isn't available. */
+/* json[jsonRow] is offset by wherever the data actually starts in the
+   sheet (ROW_OFF/COL_OFF), so the true 0-based sheet cell is
+   ROW_OFF+jsonRow / COL_OFF+colIdx. Returns Excel's own formatted
+   text for that cell (.w), which carries the cell's real number
+   format (0% vs 0.00% etc) — fallback to fmtVal only if unavailable. */
 function cellText(jsonRow,colIdx){
-  if(!CURWS) return null;
-  var addr=XLSX.utils.encode_cell({r:jsonRow+1,c:colIdx});
+  if(!CURWS||colIdx<0) return null;
+  var addr=XLSX.utils.encode_cell({r:ROW_OFF+jsonRow,c:COL_OFF+colIdx});
   var cell=CURWS[addr];
   return (cell && cell.w!==undefined && cell.w!=='') ? cell.w : null;
 }
 
+/* Finds the header row (a row whose first cell reads "Branch") and the
+   Total row (first cell reads "Total") by scanning the sheet, instead
+   of assuming fixed row numbers. This is what makes the report
+   survive a month where the branch count changes — hardcoded row
+   numbers silently pointed at the wrong row the moment the branch
+   list grew or shrank, which is what caused categories to read blank
+   data (target row) and threshold-based flags to misfire. */
+function findRows(json){
+  var headerIdx=-1, totalIdx=-1;
+  for(var i=0;i<json.length;i++){
+    var v=String((json[i]&&json[i][0])||'').trim().toLowerCase();
+    if(v==='branch' && headerIdx===-1) headerIdx=i;
+    if(v==='total'){ totalIdx=i; break; }
+  }
+  return {headerIdx:headerIdx, totalIdx:totalIdx};
+}
+
 function parse(json){
-  var tr=json[40]||[];
-  var tA=toN(tr[1]);
-  var tM=toN(tr[13]); /* FIX: Gadgets target lives in col 13, not 12 (SA) */
+  var pos=findRows(json);
+  if(pos.headerIdx===-1) throw new Error('Could not find the header row (a cell reading "Branch" in column A).');
+  if(pos.totalIdx===-1) throw new Error('Could not find the Total row (a cell reading "Total" in column A).');
+  var headerIdx=pos.headerIdx, totalIdx=pos.totalIdx;
+  var headerRow=json[headerIdx]||[];
+
+  /* map every category to its real column by matching the header text
+     — no more hardcoded column numbers to get out of sync */
+  for(var i=0;i<CATS.length;i++){
+    CATS[i].c=-1;
+    for(var h=0;h<headerRow.length;h++){
+      if(String(headerRow[h]||'').trim().toUpperCase()===CATS[i].n.trim().toUpperCase()){ CATS[i].c=h; break; }
+    }
+    if(CATS[i].c===-1) console.warn('Column not found in sheet for category: '+CATS[i].n);
+  }
+
+  var tr=json[totalIdx]||[];
+  var achCat=CATS.filter(function(x){return x.n==='ACH %';})[0];
+  var gadCat=CATS.filter(function(x){return x.n==='Gadgets';})[0];
+  var tA=achCat&&achCat.c>=0?toN(tr[achCat.c]):null;
+  var tM=gadCat&&gadCat.c>=0?toN(tr[gadCat.c]):null;
+
   var cats={};
   var totals={};
   for(var i=0;i<CATS.length;i++) cats[CATS[i].n]=[];
 
   /* category TOTAL row value, shown on each card badge — use Excel's
      own formatted text for the Total-row cell so it matches the sheet
-     exactly (this is where the badge was pulling the wrong figure) */
+     exactly */
   for(var i=0;i<CATS.length;i++){
     var cat=CATS[i];
-    var wt=cellText(40,cat.c);
+    var wt=cellText(totalIdx,cat.c);
     totals[cat.n]=wt!==null?wt:fmtVal(tr[cat.c],cat);
   }
 
   var total=0;
+  var branches=[];
 
-  for(var r=2;r<=38;r++){
+  for(var r=headerIdx+1;r<totalIdx;r++){
     var row=json[r]; if(!row) continue;
     var b=String(row[0]||'').trim(); if(!b) continue;
     total++;
+    branches.push(b);
 
     for(var ci=0;ci<CATS.length;ci++){
-      var cat=CATS[ci], val=row[cat.c], n=toN(val), flag=false;
+      var cat=CATS[ci]; if(cat.c<0) continue;
+      var val=row[cat.c], n=toN(val), flag=false;
       if(n!==null){
         if(cat.m==='ach'){
           if(tA!==null && r2(n)<=r2(tA)) flag=true;
@@ -680,13 +726,13 @@ function parse(json){
         }
       }
       if(flag){
-        var wt=cellText(r,cat.c);
-        cats[cat.n].push({b:b, v:(wt!==null?wt:fmtVal(val,cat)), n:n});
+        var wtv=cellText(r,cat.c);
+        cats[cat.n].push({b:b, v:(wtv!==null?wtv:fmtVal(val,cat)), n:n});
       }
     }
   }
 
-  DATA={cats:cats,total:total,totals:totals};
+  DATA={cats:cats,total:total,totals:totals,branches:branches};
   document.getElementById('loader').classList.remove('show');
   render();
 }
@@ -726,7 +772,7 @@ function render(){
 
 function buildChips(c){
   var g=document.getElementById('branch-chips'); g.innerHTML='';
-  var names=ALL_BRANCHES.slice().sort();
+  var names=DATA.branches.slice().sort();
   for(var i=0;i<names.length;i++){
     var name=names[i], cnt=0;
     for(var k=0;k<CATS.length;k++){
@@ -943,7 +989,7 @@ function clearFile(){
   dz.style.display='';
   document.getElementById('file-ok').classList.remove('show');
   document.getElementById('fi').value='';
-  clearRes(); clearErr(); DATA=null; CURWS=null;
+  clearRes(); clearErr(); DATA=null; CURWS=null; ROW_OFF=0; COL_OFF=0;
 }
 function clearRes(){
   document.getElementById('results').style.display='none';
