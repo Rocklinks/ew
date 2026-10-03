@@ -8,75 +8,134 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-:root{--p:#1E40AF;--pl:#3B82F6;--pm:#DBEAFE;--a:#D97706;--am:#FEF3C7;--bg:#F1F5F9;--sf:#FFF;--bd:#CBD5E1;--bs:#93C5FD;--tx:#0F172A;--ts:#475569;--tm:#94A3B8;--ok:#15803D;--okb:#F0FDF4;--er:#DC2626;--erb:#FEF2F2;--wn:#D97706;--wnb:#FFFBEB;--r:10px;--rh:52px}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(30,64,175,.25)}
-.hb{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:15px}
-.hb .ico{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;border:1px solid rgba(255,255,255,.2)}
-.hb2{font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace}
-.wrap{max-width:1200px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:12px}
-.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.kc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:3px}
-.kl{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);font-family:'JetBrains Mono',monospace}
-.kv{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;line-height:1;color:var(--p)}
-.kv.am{color:var(--a)}.kv.rd{color:var(--er)}.kv.gn{color:var(--ok)}.kv.sm{font-size:13px;padding-top:3px}
-.ks{font-size:11px;color:var(--tm)}
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
-.ch{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--bd);background:#F8FAFC}
-.ch .d{width:8px;height:8px;border-radius:50%;background:var(--pl);flex-shrink:0}
-.ch .d.on{animation:pulse 1.2s infinite}.ch .d.ok{background:var(--ok)}.ch .d.er{background:var(--er)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-.cht{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--tx)}
-.cb{padding:14px}
-.dz{position:relative;border:2px dashed var(--bs);border-radius:var(--r);padding:36px 24px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
-.dz:hover,.dz.drag{border-color:var(--p);background:var(--pm)}
-.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dz .ic{font-size:34px;margin-bottom:8px;display:block}.dz:hover .ic{transform:scale(1.1)}
-.dz .dt{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;margin-bottom:4px}
-.dz .dh{font-size:12px;color:var(--tm);margin-bottom:12px}
-.tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
-.tg{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:3px 9px;border-radius:5px;background:var(--pm);color:var(--p);border:1px solid var(--bs)}
-.tg.a{background:var(--am);color:var(--a);border-color:#FCD34D}
-.lw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:none}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#E4E9F2;--bg2:#EEF2F9;
+  --sh-d:#B4BDD0;--sh-l:#FFFFFF;
+  --p:#1E40AF;--pl:#3B82F6;--pm:#DBEAFE;--a:#D97706;--am:#FEF3C7;
+  --tx:#1E293B;--ts:#52607A;--tm:#8A96AD;
+  --ok:#15803D;--okb:#E3F6EA;--er:#DC2626;--erb:#FBE7E7;--wn:#D97706;--wnb:#FDF1D8;
+  --r:20px;--rs:14px;--rh:64px;
+  --raise:9px 9px 18px var(--sh-d),-9px -9px 18px var(--sh-l);
+  --raise-s:5px 5px 10px var(--sh-d),-5px -5px 10px var(--sh-l);
+  --raise-xs:3px 3px 6px var(--sh-d),-3px -3px 6px var(--sh-l);
+  --inset:inset 6px 6px 12px var(--sh-d),inset -6px -6px 12px var(--sh-l);
+  --inset-s:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;
+  background-image:radial-gradient(circle at 12% 8%,rgba(255,255,255,.7),transparent 40%),radial-gradient(circle at 88% 92%,rgba(59,130,246,.10),transparent 45%);
+  background-attachment:fixed}
+
+/* ---------- header ---------- */
+header{height:var(--rh);background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:0 8px 18px rgba(180,189,208,.55),0 -2px 0 var(--sh-l) inset}
+.hb{display:flex;align-items:center;gap:12px;color:var(--p);font-weight:800;font-size:15px;letter-spacing:.2px;white-space:nowrap}
+.hb .ico{width:40px;height:40px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:var(--raise-xs);animation:floaty 4s ease-in-out infinite}
+nav{display:flex;gap:10px;margin-left:10px;flex-wrap:wrap}
+nav a{padding:8px 18px;border-radius:12px;font-size:.74rem;font-weight:700;text-decoration:none;color:var(--ts);letter-spacing:.5px;background:var(--bg);box-shadow:var(--raise-xs);transition:all .2s ease}
+nav a:hover{color:var(--p);transform:translateY(-2px);box-shadow:var(--raise-s)}
+nav a:active,nav a.active{color:var(--p);box-shadow:var(--inset-s);transform:none}
+.hb2{font-size:11px;color:var(--ts);background:var(--bg);box-shadow:var(--inset-s);padding:7px 14px;border-radius:20px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1200px;margin:0 auto;padding:30px 20px 60px;display:flex;flex-direction:column;gap:24px}
+.wrap>*{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.wrap>*:nth-child(1){animation-delay:.05s}.wrap>*:nth-child(2){animation-delay:.15s}.wrap>*:nth-child(3){animation-delay:.25s}
+
+/* ---------- KPI ---------- */
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.kc{background:var(--bg);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--raise);transition:transform .25s ease,box-shadow .25s ease;position:relative;overflow:hidden}
+.kc:hover{transform:translateY(-4px);box-shadow:12px 14px 24px var(--sh-d),-10px -10px 20px var(--sh-l)}
+.kc::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);transition:left .7s ease}
+.kc:hover::after{left:130%}
+.kl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--tm);font-family:'JetBrains Mono',monospace}
+.kv{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;line-height:1.1;color:var(--p);text-shadow:1px 1px 0 var(--sh-l)}
+.kv.am{color:var(--a)}.kv.rd{color:var(--er)}.kv.gn{color:var(--ok)}.kv.sm{font-size:16px;padding-top:8px}
+.ks{font-size:11px;color:var(--tm);word-break:break-all}
+
+/* ---------- cards ---------- */
+.card{background:var(--bg);border-radius:var(--r);box-shadow:var(--raise);overflow:hidden}
+.ch{display:flex;align-items:center;gap:10px;padding:16px 22px}
+.ch .d{width:12px;height:12px;border-radius:50%;background:var(--pl);flex-shrink:0;box-shadow:var(--inset-s),0 0 8px rgba(59,130,246,.6)}
+.ch .d.on{animation:pulse 1.2s infinite}
+.ch .d.ok{background:var(--ok);box-shadow:var(--inset-s),0 0 8px rgba(21,128,61,.55)}
+.ch .d.er{background:var(--er);box-shadow:var(--inset-s),0 0 8px rgba(220,38,38,.55)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.cht{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--tx)}
+.cb{padding:6px 22px 22px}
+
+/* ---------- dropzone ---------- */
+.dz{position:relative;border-radius:var(--r);padding:48px 24px;text-align:center;cursor:pointer;transition:all .25s ease;background:var(--bg);box-shadow:var(--inset);overflow:hidden}
+.dz::before{content:'';position:absolute;inset:12px;border:2px dashed rgba(59,130,246,.35);border-radius:calc(var(--r) - 6px);pointer-events:none;transition:all .25s ease}
+.dz:hover::before,.dz.drag::before{border-color:var(--p);inset:8px}
+.dz.drag{box-shadow:var(--inset),0 0 0 4px rgba(59,130,246,.15)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10}
+.dz .ic,.dz .dt,.dz .dh,.dz .tags{pointer-events:none}
+.dz .ic{font-size:40px;margin-bottom:12px;display:inline-flex;width:84px;height:84px;align-items:center;justify-content:center;border-radius:50%;background:var(--bg);box-shadow:var(--raise-s);animation:floaty 3.5s ease-in-out infinite;transition:transform .25s}
+.dz:hover .ic{transform:scale(1.1) rotate(-4deg)}
+.dz .dt{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-bottom:4px}
+.dz .dh{font-size:12px;color:var(--tm);margin-bottom:16px}
+.tags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tg{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:5px 12px;border-radius:10px;background:var(--bg);color:var(--p);box-shadow:var(--raise-xs)}
+.tg.a{color:var(--a)}
+
+/* ---------- log ---------- */
+.lw{background:var(--bg);border-radius:var(--r);box-shadow:var(--raise);overflow:hidden;display:none}
 .lw.show{display:block}
+.lscroll{margin:0 22px 22px;border-radius:var(--rs);box-shadow:var(--inset);max-height:260px;overflow:auto;background:var(--bg)}
 .lt{width:100%;border-collapse:collapse;font-size:12px}
-.lt thead th{background:#F1F5F9;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--tm);padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd)}
-.lt tbody tr{border-bottom:1px solid var(--bd);height:34px}.lt tbody tr:hover{background:#F8FAFC}
-.lt td{padding:0 12px;vertical-align:middle;font-size:12px}
-.lt td:first-child{font-family:'JetBrains Mono',monospace;width:50px}
-.bg{display:inline-flex;font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase}
-.bg.ok{background:var(--okb);color:var(--ok);border:1px solid rgba(21,128,61,.2)}
-.bg.info{background:var(--pm);color:var(--p);border:1px solid var(--bd)}
-.bg.wn{background:var(--wnb);color:var(--wn);border:1px solid rgba(217,119,6,.2)}
-.bg.er{background:var(--erb);color:var(--er);border:1px solid rgba(220,38,38,.2)}
-.dl{display:none}.dl.show{display:block}
-.dc{background:linear-gradient(135deg,#1E40AF,#1D4ED8);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 4px 16px rgba(30,64,175,.25)}
-.di{display:flex;flex-direction:column;gap:2px}
-.dlt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#fff}
-.dlm{font-size:12px;color:rgba(255,255,255,.65)}
-.db{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.db:hover{background:rgba(255,255,255,.25);transform:translateY(-1px)}
-::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bs);border-radius:8px}
-.pgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.pchip{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:6px 10px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--ts);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
-.pchip.found{background:var(--okb);border-color:rgba(21,128,61,.25);color:var(--ok)}
-.pchip.found.off{background:var(--sf);border-color:var(--bd);color:var(--tm);opacity:.55}
-.pchip.miss{background:var(--erb);border-color:rgba(220,38,38,.2);color:var(--er);opacity:.7;cursor:default}
-.pchip input{cursor:pointer}
-.genbtn{margin-top:12px;display:flex;justify-content:flex-end}
-.genb{background:var(--p);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.genb:hover{background:#1D4ED8;transform:translateY(-1px)}
+.lt thead th{background:var(--bg);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tm);padding:10px 14px;text-align:left;position:sticky;top:0}
+.lt tbody tr{height:36px;animation:pop .3s ease both}
+.lt tbody tr:hover{background:rgba(255,255,255,.5)}
+.lt td{padding:0 14px;vertical-align:middle;font-size:12px}
+.lt td:first-child{font-family:'JetBrains Mono',monospace;width:50px;color:var(--tm)}
+.bg{display:inline-flex;font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;background:var(--bg);box-shadow:var(--raise-xs)}
+.bg.ok{color:var(--ok)}.bg.info{color:var(--p)}.bg.wn{color:var(--wn)}.bg.er{color:var(--er)}
+
+/* ---------- product chips ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;padding:6px 4px}
+.pchip{background:var(--bg);border-radius:var(--rs);padding:12px 12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--p);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--raise-s);transition:all .2s ease;animation:pop .4s ease both;position:relative}
+.pchip:hover{transform:translateY(-3px);box-shadow:8px 10px 16px var(--sh-d),-6px -6px 12px var(--sh-l)}
+.pchip.off{color:var(--tm);box-shadow:var(--inset-s);transform:none}
+.pchip input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:6px;background:var(--bg);box-shadow:var(--inset-s);cursor:pointer;position:relative;flex-shrink:0;transition:all .2s}
+.pchip input:checked{background:var(--p);box-shadow:var(--raise-xs)}
+.pchip input:checked::after{content:'✓';position:absolute;inset:0;color:#fff;font-size:12px;line-height:18px;text-align:center}
+.pchip .pl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:105px}
+
+/* ---------- buttons ---------- */
+.genbtn{margin-top:22px;display:flex;justify-content:flex-end}
+.genb,.db{position:relative;overflow:hidden;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700;border-radius:14px;transition:all .2s ease}
+.genb{background:linear-gradient(145deg,#2A52CF,#1E40AF);color:#fff;padding:13px 28px;font-size:13px;box-shadow:6px 6px 14px var(--sh-d),-5px -5px 12px var(--sh-l)}
+.genb:hover{transform:translateY(-2px);box-shadow:8px 10px 18px var(--sh-d),-6px -6px 14px var(--sh-l)}
+.genb:active{transform:translateY(1px);box-shadow:inset 4px 4px 8px rgba(0,0,0,.3),inset -3px -3px 6px rgba(255,255,255,.1)}
 .genb:disabled{opacity:.5;cursor:not-allowed}
-.prewrap{display:none;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
-.prewrap.show{display:block}
-.pretabs{display:flex;gap:0;overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--bd)}
-.pretab{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:7px 13px;cursor:pointer;color:var(--tm);border-right:1px solid var(--bd);white-space:nowrap;flex-shrink:0;transition:all .12s}
-.pretab:hover{background:var(--pm);color:var(--p)}
-.pretab.active{background:var(--sf);color:var(--p);box-shadow:inset 0 -2px 0 var(--p)}
-.prebody{overflow:auto;max-height:480px;padding:0;background:#f8fafc}
-.xt{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;width:100%}
-.xt td{border:1px solid #bbb;padding:3px 10px;white-space:nowrap;text-align:center;min-width:60px}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rip .6s linear;pointer-events:none}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+
+/* ---------- download ---------- */
+.dl{display:none}.dl.show{display:block;animation:rise .5s ease both}
+.dc{background:var(--bg);border-radius:var(--r);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:var(--raise);position:relative;overflow:hidden}
+.dc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,var(--pl),var(--p));border-radius:6px 0 0 6px}
+.di{display:flex;flex-direction:column;gap:4px;padding-left:10px}
+.dlt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--p)}
+.dlm{font-size:12px;color:var(--ts)}
+.db{display:flex;align-items:center;gap:8px;background:linear-gradient(145deg,#2A52CF,#1E40AF);color:#fff;padding:13px 24px;font-size:13px;white-space:nowrap;flex-shrink:0;box-shadow:6px 6px 14px var(--sh-d),-5px -5px 12px var(--sh-l)}
+.db:hover{transform:translateY(-2px)}
+.db:active{transform:translateY(1px);box-shadow:inset 4px 4px 8px rgba(0,0,0,.3)}
+
+/* ---------- preview ---------- */
+.prewrap{display:none;background:var(--bg);border-radius:var(--r);box-shadow:var(--raise);overflow:hidden}
+.prewrap.show{display:block;animation:rise .5s ease both}
+.pretabs{display:flex;gap:12px;overflow-x:auto;padding:8px 22px 16px}
+.pretab{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:9px 16px;cursor:pointer;color:var(--tm);white-space:nowrap;flex-shrink:0;transition:all .2s;border-radius:11px;background:var(--bg);box-shadow:var(--raise-xs)}
+.pretab:hover{color:var(--p);transform:translateY(-2px)}
+.pretab.active{color:var(--p);box-shadow:var(--inset-s);transform:none}
+.prebody{overflow:auto;max-height:480px;margin:0 22px 22px;border-radius:var(--rs);box-shadow:var(--inset);background:var(--bg2);padding:10px}
+.xt{border-collapse:separate;border-spacing:0;font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;border-radius:10px;overflow:hidden}
+.xt td{border:1px solid #bbb;padding:4px 10px;white-space:nowrap;text-align:center;min-width:60px}
 .xt td.xl{text-align:left;min-width:140px}
 .xt tr.xtitle td{background:#FF0000;color:#fff;font-weight:700;font-size:12px;text-align:center}
 .xt tr.xhdr td{background:#FF0000;color:#fff;font-weight:700}
@@ -84,22 +143,28 @@ header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);displ
 .xt tr.xreg td{background:#FF0000;color:#fff;font-weight:700}
 .xt tr.xred td.xach{color:#FF0000;font-weight:700}
 .xt tr.xdata td{background:#fff;color:#1A1A1A}
+.xt tr.xdata:hover td{background:#EEF4FF}
+
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--sh-d);border-radius:8px}
+
+@media(max-width:860px){.kpi{grid-template-columns:repeat(2,1fr)}header{flex-wrap:wrap;height:auto;padding:12px 16px}.hb2{display:none}.dc{flex-direction:column;align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <header>
   <div class="hb"><div class="ico">📊</div>HE Premium Report Builder</div>
-  <nav style="display:flex;gap:4px;margin-left:18px">
-    <a href="index.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Home</a>
-    <a href="he.html" class="active" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:#1E40AF;color:#fff;letter-spacing:.5px;">High End</a>
-    <a href="growth.html" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Growth</a>
-    <a href="https://rocklinks.github.io/sathya-review-tracker/" style="padding:5px 14px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;background:transparent;color:rgba(255,255,255,.8);letter-spacing:.5px;border:1px solid rgba(255,255,255,.3)">Reviews</a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="he.html" class="active">High End</a>
+    <a href="growth.html">Growth</a>
+    <a href="https://rocklinks.github.io/sathya-review-tracker/">Reviews</a>
   </nav>
-  <span class="hb2">11 Products · Ach% Engine · ExcelJS</span>
+  <span class="hb2">Auto-Detect Products · Ach% Engine · ExcelJS</span>
 </header>
 <div class="wrap">
   <div class="kpi">
-    <div class="kc"><div class="kl">Sheets</div><div class="kv" id="kSh">—</div><div class="ks">of 11 products</div></div>
+    <div class="kc"><div class="kl">Sheets</div><div class="kv" id="kSh">—</div><div class="ks">products detected</div></div>
     <div class="kc"><div class="kl">Branches</div><div class="kv am" id="kBr">—</div><div class="ks">max per sheet</div></div>
     <div class="kc"><div class="kl">Red Flagged</div><div class="kv rd" id="kRd">—</div><div class="ks">Ach% ≤ Total Ach%</div></div>
     <div class="kc"><div class="kl">Status</div><div class="kv gn sm" id="kSt">READY</div><div class="ks" id="kFile">awaiting upload</div></div>
@@ -112,7 +177,7 @@ header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);displ
         <span class="ic">📂</span>
         <div class="dt">Drop Excel file here</div>
         <div class="dh">.xlsx — drag & drop or click to browse</div>
-        <div class="tags"><span class="tg">HE / Premium</span><span class="tg">11 Products</span><span class="tg a">Ach% Sort ↓</span><span class="tg a">Red ≤ Total Ach%</span></div>
+        <div class="tags"><span class="tg">HE / Premium</span><span class="tg">Any Product Name</span><span class="tg a">Ach% Sort ↓</span><span class="tg a">Red ≤ Total Ach%</span></div>
       </div>
     </div>
   </div>
@@ -122,7 +187,7 @@ header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);displ
   </div>
   <div class="lw" id="logWrap">
     <div class="ch"><div class="d on" id="lDot"></div><div class="cht" id="lTitle">Processing Log</div></div>
-    <table class="lt"><thead><tr><th>#</th><th>Status</th><th>Message</th></tr></thead><tbody id="lBody"></tbody></table>
+    <div class="lscroll" id="lScroll"><table class="lt"><thead><tr><th>#</th><th>Status</th><th>Message</th></tr></thead><tbody id="lBody"></tbody></table></div>
   </div>
   <div class="prewrap" id="preWrap">
     <div class="ch"><div class="d ok"></div><div class="cht">Live Preview — what goes into Excel</div></div>
@@ -137,30 +202,68 @@ header{height:var(--rh);background:linear-gradient(135deg,#1E3A8A,#1E40AF);displ
   </div>
 </div>
 <script>
-const PRODS=[
-  {key:'mob',label:'Mobile 70K+',sheet:'Mob',rx:/mob(?:ile)?|70\s*k/i,ico:'📱'},
-  {key:'led',label:'LED 55 inch+',sheet:'LED',rx:/\bled\b|55\s*(?:inch|")/i,ico:'📺'},
-  {key:'sbs',label:'SBS',sheet:'SBS',rx:/\bsbs\b/i,ico:'🧊'},
-  {key:'wmfl',label:'WM FL',sheet:'WMFL',rx:/wm\s*fl|wmfl|front\s*load/i,ico:'🫧'},
-  {key:'chim',label:'Chimney',sheet:'Chim',rx:/chim(?:ney)?/i,ico:'🏠'},
-  {key:'dw',label:'DW',sheet:'DW',rx:/\bdw\b|dish\s*wash/i,ico:'🍽'},
-  {key:'wp',label:'W.P',sheet:'WP',rx:/\bw\.?p\b|wash(?:ing)?\s*mach|top\s*load/i,ico:'👕'},
-  {key:'oven',label:'Oven',sheet:'Oven',rx:/\boven\b/i,ico:'♨️'},
-  {key:'rvc',label:'RVC',sheet:'RVC',rx:/\brvc\b|robot\s*vac/i,ico:'🤖'},
-  {key:'inv',label:'Inverter',sheet:'Inv',rx:/\binv(?:erter)?\b/i,ico:'⚡'},
-  {key:'laptop',label:'Laptop',sheet:'Laptop',rx:/\blaptop\b/i,ico:'💻'}
+/* Icons only. Product names/sheets now come from the source file headers, NOT from this list.
+   Rename a column in Excel and it still works; it just gets the default 📦 icon if no pattern matches. */
+const ICONS=[
+  {rx:/mob(?:ile)?|70\s*k/i,ico:'📱'},
+  {rx:/\bled\b|\btv\b|\d+\s*(?:inch|")/i,ico:'📺'},
+  {rx:/\bsbs\b|fridge|refrig/i,ico:'🧊'},
+  {rx:/wm|front\s*load|\bfl\b|kg/i,ico:'🫧'},
+  {rx:/chim(?:ney)?/i,ico:'🏠'},
+  {rx:/\bdw\b|dish\s*wash/i,ico:'🍽'},
+  {rx:/\bw\.?p\b|wash(?:ing)?\s*mach|top\s*load/i,ico:'👕'},
+  {rx:/\boven\b/i,ico:'♨️'},
+  {rx:/\brvc\b|robot\s*vac/i,ico:'🤖'},
+  {rx:/\binv(?:erter)?\b/i,ico:'⚡'},
+  {rx:/\blaptop\b/i,ico:'💻'}
 ];
+const iconFor=t=>{const m=ICONS.find(i=>i.rx.test(t));return m?m.ico:'📦'};
+const SKIP_HDR=/^(branch|region|s\.?\s*no\.?|sl\.?\s*no\.?|total|grand\s*total)$/i;
 const DEFAULT_SKIP=[];
 let previewData=[];
 let logIdx=0;
-let ctx=null; // holds parsed workbook state between detection phase and generate phase
+let ctx=null;
+
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function getToday(){const d=new Date();return['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][d.getMonth()]+d.getDate()}
+
+/* Excel sheet-name rules: max 31 chars, no \ / ? * [ ] :, no leading/trailing ', unique (case-insens) */
+function makeSheetName(label,used){
+  let base=String(label||'Sheet').replace(/[\\\/\?\*\[\]:]/g,'-').replace(/\s+/g,' ').trim().replace(/^'+|'+$/g,'');
+  if(!base)base='Sheet';
+  base=base.substring(0,31);
+  let name=base,n=2;
+  while(used.has(name.toLowerCase())){
+    const suf='_'+n++;
+    name=base.substring(0,31-suf.length)+suf;
+  }
+  used.add(name.toLowerCase());
+  return name;
+}
+
+/* animated number */
+function setKpi(id,val){
+  const el=document.getElementById(id);
+  const n=Number(val);
+  if(!isFinite(n)){el.textContent=val;return}
+  const t0=performance.now(),dur=700;
+  (function f(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=Math.round(n*e);if(k<1)requestAnimationFrame(f)})(t0);
+}
+/* ripple on buttons */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.genb,.db');if(!b)return;
+  const r=b.getBoundingClientRect(),s=Math.max(r.width,r.height);
+  const sp=document.createElement('span');sp.className='ripple';
+  sp.style.width=sp.style.height=s+'px';sp.style.left=(e.clientX-r.left-s/2)+'px';sp.style.top=(e.clientY-r.top-s/2)+'px';
+  b.appendChild(sp);setTimeout(()=>sp.remove(),600);
+});
+
 function initLog(){logIdx=0;document.getElementById('lBody').innerHTML='';document.getElementById('logWrap').classList.add('show')}
 function log(msg,type='info'){logIdx++;const b=document.getElementById('lBody'),tr=document.createElement('tr');
   if(type==='warn')tr.style.color='var(--wn)';if(type==='err')tr.style.color='var(--er)';
   const bc=type==='ok'?'ok':type==='warn'?'wn':type==='err'?'er':'info';
-  tr.innerHTML=`<td>${logIdx}</td><td><span class="bg ${bc}">${type.toUpperCase()}</span></td><td>${msg}</td>`;
-  b.appendChild(tr);b.parentElement.parentElement.scrollTop=b.scrollHeight}
+  tr.innerHTML=`<td>${logIdx}</td><td><span class="bg ${bc}">${type.toUpperCase()}</span></td><td>${esc(msg)}</td>`;
+  b.appendChild(tr);document.getElementById('lScroll').scrollTop=9e6}
 function setLogStatus(t,ds){document.getElementById('lTitle').textContent=t;document.getElementById('lDot').className='d '+(ds==='done'?'ok':ds==='fail'?'er':'on')}
 function cellVal(ws,r,c){const cell=ws[XLSX.utils.encode_cell({r,c})];return cell?cell.v:undefined}
 function mergeTopLeft(ws,r,c){for(const m of(ws['!merges']||[])){if(r>=m.s.r&&r<=m.e.r&&c>=m.s.c&&c<=m.e.c)return cellVal(ws,m.s.r,m.s.c)}return cellVal(ws,r,c)}
@@ -170,8 +273,6 @@ function normAchCell(ws,origRow,col){
   const addr=XLSX.utils.encode_cell({r:origRow,c:col});
   const cell=ws[addr];
   if(!cell)return 0;
-  // Excel percent-formatted cells store the raw fraction (e.g. 10 for "1000%", 0.1 for "10%")
-  // and put the correctly-scaled text in .w — trust that first since it can't be ambiguous.
   if(cell.w&&/%/.test(cell.w)){
     const f=parseFloat(cell.w.replace(/[^0-9.\-]/g,''));
     if(!isNaN(f))return Math.round(f)/100;
@@ -195,6 +296,23 @@ function findTargetSheet(wb){
   return best;
 }
 
+/* Count runs of >=2 adjacent equal non-empty headers (merged product group = one run).
+   Product row has many runs; sub-header row (Target|Ach|%...) has none. */
+function groupRunScore(ws,r,range){
+  /* ignore title-style runs that span most of the sheet */
+  const maxLen=range.e.c>6?Math.floor(range.e.c*0.6):range.e.c+1;
+  let runs=0,prev=null,len=0;
+  for(let c=1;c<=range.e.c+1;c++){
+    const v=c<=range.e.c?(mergeTopLeft(ws,r,c)||'').toString().trim():'';
+    if(v&&v===prev){len++}
+    else{
+      if(len>=2&&len<=maxLen)runs++;
+      prev=v||null;len=v?1:0;
+    }
+  }
+  return runs;
+}
+
 async function processFile(file){
   initLog();
   document.getElementById('uDot').className='d on';
@@ -215,57 +333,79 @@ async function processFile(file){
     const range=XLSX.utils.decode_range(ws['!ref']||'A1:A1');
     log('Dimensions: '+(range.e.c+1)+' cols × '+(range.e.r+1)+' rows');
 
-    let prodRow=0,subRow=1,dataStart=2;
-    let m0=0,m1=0,m2=0;
-    for(let c=1;c<=range.e.c;c++){
-      const v0=(mergeTopLeft(ws,0,c)||'').toString();
-      const v1=(mergeTopLeft(ws,1,c)||'').toString();
-      const v2=(mergeTopLeft(ws,2,c)||'').toString();
-      if(PRODS.some(p=>p.rx.test(v0)))m0++;
-      if(PRODS.some(p=>p.rx.test(v1)))m1++;
-      if(PRODS.some(p=>p.rx.test(v2)))m2++;
+    /* --- find product header row from structure (no hardcoded names) --- */
+    let prodRow=0,bestScore=0;
+    for(let r=0;r<=2;r++){
+      const s=groupRunScore(ws,r,range);
+      if(s>bestScore){bestScore=s;prodRow=r}
     }
-    if(m2>m0&&m2>m1){prodRow=2;subRow=3;dataStart=4}
-    else if(m1>m0){prodRow=1;subRow=2;dataStart=3}
+    if(bestScore===0){
+      /* fallback: row with most non-empty distinct headers whose next row also has content */
+      let bestCnt=0;
+      for(let r=0;r<=2;r++){
+        const set=new Set();
+        for(let c=1;c<=range.e.c;c++){
+          const v=(mergeTopLeft(ws,r,c)||'').toString().trim();
+          const below=(mergeTopLeft(ws,r+1,c)||'').toString().trim();
+          if(v&&below&&!SKIP_HDR.test(v))set.add(v.toLowerCase());
+        }
+        if(set.size>bestCnt){bestCnt=set.size;prodRow=r}
+      }
+      log('No merged groups found, fallback header row guess','warn');
+    }
+    let subRow=prodRow+1,dataStart=prodRow+2;
     log('prodRow='+(prodRow+1)+', subRow='+(subRow+1)+', dataStart='+(dataStart+1));
 
     document.getElementById('pCard').style.display='';
     const pGrid=document.getElementById('pGrid');pGrid.innerHTML='';
 
-    const groups={};
+    /* --- group columns by header text, whatever it says --- */
+    function buildGroups(pr){
+    const prodRow=pr,subRow=pr+1;
+    const groups={},order=[],nameToId={};
     for(let c=1;c<=range.e.c;c++){
-      const h1=(mergeTopLeft(ws,prodRow,c)||'').toString().trim();
+      const h1=(mergeTopLeft(ws,prodRow,c)||'').toString().replace(/\s+/g,' ').trim();
       const h2=(mergeTopLeft(ws,subRow,c)||'').toString().trim();
+      if(!h1)continue;
       if(/^total$/i.test(h2))continue;
-      const prod=PRODS.find(p=>p.rx.test(h1));
-      if(prod){
-        if(!groups[prod.key])groups[prod.key]={prod,cols:[],subHeaders:[]};
-        groups[prod.key].cols.push(c);
-        groups[prod.key].subHeaders.push(h2||'Col'+c);
+      if(SKIP_HDR.test(h1))continue;
+      const nk=h1.toLowerCase();
+      let id=nameToId[nk];
+      if(!id){
+        id='g'+order.length;nameToId[nk]=id;order.push(id);
+        groups[id]={id,label:h1,ico:iconFor(h1),cols:[],subHeaders:[]};
+      }
+      groups[id].cols.push(c);
+      groups[id].subHeaders.push(h2||'Col'+c);
+    }
+    return{groups,order};
+    }
+    let{groups,order}=buildGroups(prodRow);
+    if(!order.length){
+      /* chosen row gave nothing — try other header rows before giving up */
+      for(const r of [0,1,2,3]){
+        if(r===prodRow)continue;
+        const t=buildGroups(r);
+        if(t.order.length){groups=t.groups;order=t.order;prodRow=r;subRow=r+1;dataStart=r+2;
+          log('Retry: using header row '+(r+1)+' (dataStart='+(dataStart+1)+')','warn');break}
       }
     }
-    const foundKeys=Object.keys(groups);
-    log('Matched: '+(foundKeys.length?foundKeys.map(k=>groups[k].prod.sheet).join(', '):'NONE'),foundKeys.length?'ok':'err');
+    const foundKeys=order;
+    log('Detected: '+(foundKeys.length?foundKeys.map(k=>groups[k].label).join(', '):'NONE'),foundKeys.length?'ok':'err');
+    if(!foundKeys.length){fail('No product columns detected');return}
 
-    for(const p of PRODS){
-      if(groups[p.key]){
-        const checked=!DEFAULT_SKIP.includes(p.key);
-        const lbl=document.createElement('label');
-        lbl.className='pchip found'+(checked?'':' off');
-        lbl.innerHTML=`<input type="checkbox" data-key="${p.key}" ${checked?'checked':''}/>${p.ico} ${p.label}`;
-        const cb=lbl.querySelector('input');
-        cb.addEventListener('change',()=>{lbl.classList.toggle('off',!cb.checked)});
-        pGrid.appendChild(lbl);
-      } else {
-        const chip=document.createElement('div');
-        chip.className='pchip miss';
-        chip.textContent=p.ico+' '+p.label;
-        pGrid.appendChild(chip);
-      }
-    }
-    if(!foundKeys.length){fail('No products matched');return}
+    foundKeys.forEach((k,i)=>{
+      const g=groups[k];
+      const checked=!DEFAULT_SKIP.includes(g.label);
+      const lbl=document.createElement('label');
+      lbl.className='pchip'+(checked?'':' off');
+      lbl.style.animationDelay=(i*0.05)+'s';
+      lbl.innerHTML=`<input type="checkbox" data-key="${k}" ${checked?'checked':''}/><span>${g.ico}</span><span class="pl" title="${esc(g.label)}">${esc(g.label)}</span>`;
+      const cb=lbl.querySelector('input');
+      cb.addEventListener('change',()=>{lbl.classList.toggle('off',!cb.checked)});
+      pGrid.appendChild(lbl);
+    });
 
-    // stash parsed state, wait for user to hit Generate
     ctx={ws,dataStart,range,groups,foundKeys};
     document.getElementById('uDot').className='d ok';
     document.getElementById('uTitle').textContent='✓ Parsed: '+file.name+' — pick sheets, then Generate';
@@ -287,12 +427,13 @@ function generateReport(){
   document.getElementById('kSt').textContent='PROC';document.getElementById('kSt').style.color='var(--wn)';
   setLogStatus('Building workbook','on');
   const skipped=foundKeys.filter(k=>!selected.includes(k));
-  if(skipped.length)log('Skipped: '+skipped.map(k=>groups[k].prod.sheet).join(', '),'warn');
+  if(skipped.length)log('Skipped: '+skipped.map(k=>groups[k].label).join(', '),'warn');
 
   const outWb=new ExcelJS.Workbook();
   outWb.creator='HE Premium Report Builder';
   let totalSheets=0,maxBranches=0,totalRed=0;
   previewData=[];
+  const usedNames=new Set();
 
   const RED_ARGB='FFFF0000',WHITE_ARGB='FFFFFFFF';
   const BORDER_CLR='FFAAAAAA';
@@ -305,7 +446,10 @@ function generateReport(){
   function applyTotal(cell,align){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:RED_ARGB}};cell.font={name:'Calibri',size:11,bold:true,color:{argb:WHITE_ARGB}};cell.border=thinBorder;cell.alignment={horizontal:align||'center',vertical:'middle'}}
 
   for(const key of selected){
-    const{prod,cols,subHeaders}=groups[key];
+    const g=groups[key];
+    const{cols,subHeaders}=g;
+    /* sheet name + title come straight from the source header text */
+    const prod={label:g.label,sheet:makeSheetName(g.label,usedNames)};
     const branchRows=[],totalRows=[],regionRows=[];
 
     let firstTotalIdx=-1;
@@ -347,7 +491,7 @@ function generateReport(){
 
     let tAchNorm=null;
     if(totalRows.length&&achIdx>=0)tAchNorm=achOf(totalRows[0]);
-    log(prod.sheet+': totalAch='+(tAchNorm!==null?(tAchNorm*100).toFixed(0)+'%':'n/a'),tAchNorm!==null?'ok':'wn');
+    log(prod.sheet+': totalAch='+(tAchNorm!==null?(tAchNorm*100).toFixed(0)+'%':'n/a'),tAchNorm!==null?'ok':'warn');
 
     let sheetRed=0;
     if(tAchNorm!==null&&achIdx>=0){for(const item of branchRows){if(achOf(item)<=tAchNorm)sheetRed++}}
@@ -355,8 +499,7 @@ function generateReport(){
     const targetIdx=subHeaders.findIndex(h=>/target|tgt/i.test(h.toString()));
     const targetColInRow=targetIdx>=0?targetIdx+1:-1;
     const nc=subHeaders.length+1;
-    const wsName=prod.sheet.substring(0,31);
-    const xws=outWb.addWorksheet(wsName);
+    const xws=outWb.addWorksheet(prod.sheet);
 
     xws.mergeCells(1,1,1,nc);
     const titleCell=xws.getCell(1,1);
@@ -474,11 +617,11 @@ function generateReport(){
 
   (async()=>{
     window._outExcelBuf=await outWb.xlsx.writeBuffer();
-    const outFile=getToday()+'.xlsx';
+    const outFile='highend.xlsx';
 
-    document.getElementById('kSh').textContent=totalSheets;
-    document.getElementById('kBr').textContent=maxBranches;
-    document.getElementById('kRd').textContent=totalRed;
+    setKpi('kSh',totalSheets);
+    setKpi('kBr',maxBranches);
+    setKpi('kRd',totalRed);
     document.getElementById('kSt').textContent='DONE';
     document.getElementById('kSt').style.color='var(--ok)';
     setLogStatus('Complete — '+totalSheets+' sheets ready','done');
@@ -516,9 +659,9 @@ function renderPreview(){
 function renderPreviewSheet(idx){
   const sh=previewData[idx];
   const body=document.getElementById('preBody');
-  let html='<table class="xt"><tr class="xtitle"><td colspan="'+sh.headers.length+'">'+sh.title+'</td></tr>';
+  let html='<table class="xt"><tr class="xtitle"><td colspan="'+sh.headers.length+'">'+esc(sh.title)+'</td></tr>';
   html+='<tr class="xhdr">';
-  for(const h of sh.headers)html+='<td>'+h+'</td>';
+  for(const h of sh.headers)html+='<td>'+esc(h)+'</td>';
   html+='</tr>';
   for(const row of sh.rows){
     const bn=String(row[0]||'');
@@ -537,7 +680,7 @@ function renderPreviewSheet(idx){
       if(v==null)v='';
       else if(c===sh.achIdx&&typeof v==='number')v=Math.round(v*100)+'%';
       else if(typeof v==='number')v=v.toLocaleString('en-IN');
-      html+='<td class="'+tdCls+'">'+v+'</td>';
+      html+='<td class="'+tdCls+'">'+esc(v)+'</td>';
     }
     html+='</tr>';
   }
@@ -550,7 +693,9 @@ function fail(msg){setLogStatus('Error','fail');log(msg,'err');
   document.getElementById('uDot').className='d er'}
 
 const zone=document.getElementById('dropZone'),inp=document.getElementById('fileInput');
-inp.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0])});
+inp.addEventListener('change',e=>{const f=e.target.files[0];if(f)processFile(f).finally(()=>{inp.value=''})});
+window.addEventListener('error',e=>{try{document.getElementById('logWrap').classList.add('show');log('JS error: '+e.message,'err')}catch(_){}});
+window.addEventListener('unhandledrejection',e=>{try{document.getElementById('logWrap').classList.add('show');log('Error: '+(e.reason&&e.reason.message||e.reason),'err')}catch(_){}});
 zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag')});
 zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
 zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0])});
@@ -559,7 +704,7 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   if(!window._outExcelBuf){log('No workbook in memory yet — hit Generate first','err');return}
   const blob=new Blob([window._outExcelBuf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob);
-  const fname=getToday()+'.xlsx';
+  const fname='highend.xlsx';
   try{
     const a=document.createElement('a');
     a.href=url;a.download=fname;a.style.display='none';
