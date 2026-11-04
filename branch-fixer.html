@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Branch Name Corrector</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#e3e8ef; --light:#ffffff; --dark:#b8c0cf; --text:#3b4457; --muted:#7a8499;
+  --ok:#2f9e6e; --warn:#d9822b; --accent:#4f6bed; --bad:#d64c5a;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#2b303b; --light:#363c49; --dark:#1f232b; --text:#dde2ec; --muted:#9099ad; --ok:#4cc790; --warn:#f0a15a; --accent:#8da0ff; --bad:#ff7d8a; }
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;padding:32px 16px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:1.7rem;margin:0 0 6px;font-weight:700}
+p.sub{margin:0 0 28px;color:var(--muted)}
+.raised{background:var(--bg);border-radius:22px;box-shadow:9px 9px 18px var(--dark),-9px -9px 18px var(--light)}
+.pressed{background:var(--bg);border-radius:16px;box-shadow:inset 6px 6px 12px var(--dark),inset -6px -6px 12px var(--light)}
+.drop{padding:36px 20px;text-align:center;cursor:pointer;margin-bottom:26px;transition:box-shadow .2s}
+.drop.over{box-shadow:inset 6px 6px 12px var(--dark),inset -6px -6px 12px var(--light)}
+.drop:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.drop .ico{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:28px;color:var(--accent)}
+.drop strong{display:block;font-size:1.05rem;word-break:break-all}
+.drop span{color:var(--muted);font-size:.9rem}
+input[type=file]{display:none}
+.dec{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;margin-bottom:26px}
+.dec>span{font-weight:700}
+.seg{display:flex;gap:12px;flex-wrap:wrap}
+.seg button{padding:9px 16px;font-size:.9rem;border-radius:12px;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
+.seg button[aria-pressed=true]{color:var(--accent);box-shadow:inset 4px 4px 8px var(--dark),inset -4px -4px 8px var(--light)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:18px;margin-bottom:26px}
+.stat{padding:16px;text-align:center}
+.stat b{display:block;font-size:1.8rem}
+.stat small{color:var(--muted)}
+.stat.c b,.stat.r b{color:var(--ok)} .stat.o b,.stat.m b{color:var(--accent)} .stat.u b{color:var(--warn)}
+.btns{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:22px;align-items:center}
+button,select{font:inherit;font-weight:700;color:var(--text);background:var(--bg);border:0;border-radius:14px;padding:12px 22px;cursor:pointer;box-shadow:6px 6px 12px var(--dark),-6px -6px 12px var(--light);transition:box-shadow .15s}
+select{padding:11px 16px}
+button:active{box-shadow:inset 4px 4px 8px var(--dark),inset -4px -4px 8px var(--light)}
+button:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button.primary{color:var(--accent)}
+button.sm{padding:6px 12px;border-radius:10px;font-size:.85rem;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
+button.del{color:var(--bad)}
+.tablebox{padding:14px;overflow-x:auto;max-height:480px;overflow-y:auto}
+table{border-collapse:separate;border-spacing:0 8px;width:100%;font-size:.92rem}
+th{text-align:left;color:var(--muted);font-weight:600;padding:4px 12px;position:sticky;top:0;background:var(--bg)}
+td{padding:9px 12px;white-space:nowrap}
+tr.changed td{color:var(--ok);font-weight:600}
+td s{color:var(--warn);font-weight:400;margin-right:6px}
+td.unk{color:var(--bad)}
+.msg{color:var(--muted);text-align:center;padding:20px}
+.hidden{display:none}
+@media(max-width:640px){.stats{gap:10px}.stat b{font-size:1.4rem}</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Branch name corrector</h1>
+  <p class="sub">Fixes wrong branch names, changes branch codes to names, rounds decimals, removes currency symbols and commas.</p>
+
+  <div class="raised drop" id="drop" tabindex="0" role="button" aria-label="Upload file">
+    <div class="pressed ico">⇪</div>
+    <strong id="dropTitle">Drop file here or click to choose</strong>
+    <span>.xlsx · .xls · .csv · .txt</span>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt">
+  </div>
+
+  <div class="raised dec hidden" id="decBox">
+    <span id="decLbl">Decimal values found. Round numbers to:</span>
+    <div class="seg" role="group" aria-labelledby="decLbl">
+      <button type="button" data-d="0" aria-pressed="false">0 decimals</button>
+      <button type="button" data-d="1" aria-pressed="false">1 decimal</button>
+      <button type="button" data-d="2" aria-pressed="false">2 decimals</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="stats">
+      <div class="raised stat c"><b id="nChanged">0</b><small>Branch fixed</small></div>
+      <div class="raised stat o"><b id="nOk">0</b><small>Branch correct</small></div>
+      <div class="raised stat u"><b id="nUnk">0</b><small>Not found</small></div>
+      <div class="raised stat r"><b id="nRound">0</b><small>Rounded</small></div>
+      <div class="raised stat m"><b id="nCur">0</b><small>Currency cleaned</small></div>
+    </div>
+    <div class="btns">
+      <button class="primary" id="dlX">Download Excel</button>
+      <button id="dlC">Download CSV</button>
+      <button id="dlT">Download text</button>
+      <select id="sheetSel" class="hidden" aria-label="Sheet"></select>
+    </div>
+    <div class="pressed tablebox"><table id="tbl"></table></div>
+  </div>
+
+</div>
+
+<script>
+/* ===================================================================
+   BRANCH LIST. To add a new branch, add one line here:
+   ["CODE","Correct Name","Wrong Name (or leave empty)"],
+   =================================================================== */
+const DEFAULTS = [
+["APK1","Aruppukottai","Aruppukottai 1"],["APK2","Aruppukottai -2",""],["ARM1","Anjugramam-1","Anjugramam"],
+["ASM1","Ambasamudram-1","Ambasamudram"],["COL1","Colachel-1","Colachel"],["ERL2","Eral-2","Eral"],
+["KGL1","Karungal-1","Karungal"],["KSM1","Kulasekharam-1","Kulasekharam"],["KVT1","Kovilpatti",""],
+["KYR1","Kayathar-1","Kayathar"],["MAR1","Marthandam",""],["MMT1","Monday Market",""],
+["NGR1","Nagercoil",""],["PDI1","Puliyankudi-1","Puliyankudi"],["PKD1","Paramakudi",""],
+["RND1","Ramnad","Ramnad 1"],["RND2","Ramnad-2","Ramnad 2"],["RPM1","Rajapalayam",""],
+["SDI1","Surandai-1","Surandai"],["SGT1","Sengottai-1","Sengottai"],["SKD1","Sayalkudi-1","Sayalkudi"],
+["SNL1","Sankarankovil-1","Sankarankovil"],["STU2","Sattur-2","Sattur"],["SVK1","Sivakasi",""],
+["TCN1","Thiruchendur-1","Thiruchendur"],["TKS1","Thenkasi","Tenkasi"],["TKS2","Thenkasi-2","Tenkasi 2"],
+["TKY1","Thuckalay-1","Thuckalay"],["TUT1","Tuticorin-1","Tuticorin 1"],["TUT2","Tuticorin-2","Tuticorin 2"],
+["TVL1","Tirunelveli-1","Tirunelveli"],["TYI1","Thisayanvilai-1","Thisaiyavilai"],["UDN1","Udankudi",""],
+["VKM1","Villathikullam",""],["VLY1","Valliyur-1","Valliyur"],["VNR1","Virudhunagar","Virudhunagar 1"],
+["VNR2","Virudhunagar-2","Virudhunagar 2"]
+];
+
+/*CORE*/
+const key = s => String(s).toLowerCase().replace(/[^a-z0-9]/g,"");
+const rnd = (n, d = 0) => {
+  const r = Math.sign(n) * Number(Math.round(Math.abs(n) + "e" + d) + "e-" + d);
+  return r === 0 ? 0 : r;
+};
+const zf = d => d > 0 ? "0." + "0".repeat(d) : undefined;
+const pad = n => String(n).padStart(2,"0");
+const fmt = v => {
+  if(v instanceof Date) return v.getFullYear()+"-"+pad(v.getMonth()+1)+"-"+pad(v.getDate());
+  return v;
+};
+
+function buildMap(branches){
+  const out = new Map();
+  branches.forEach(([c,n]) => { if(c) out.set(key(c), n); });
+  branches.forEach(([c,n]) => { if(n && !out.has(key(n))) out.set(key(n), n); });
+  branches.forEach(([c,n,a]) => { if(a && !out.has(key(a))) out.set(key(a), n); });
+  return out;
+}
+
+/* returns {n, sym} for currency / decimal text, else null */
+function parseNum(t){
+  let x = String(t).trim(), neg = false;
+  const sym = /[₹$€£,]|^[\s(\-−]*(rs|inr)|\/-/i.test(x);
+  if(/^\(.*\)$/.test(x)){ neg = true; x = x.slice(1,-1); }
+  x = x.replace(/\s+/g,"");
+  const sign = () => { if(/^[-−]/.test(x)){ neg = !neg; x = x.slice(1); } };
+  sign();
+  x = x.replace(/^(₹|\$|€|£|rs\.?|inr)/i,"");
+  sign();
+  x = x.replace(/\/-$/,"");
+  if(x.includes(",")){
+    if(!/^\d{1,3}(,\d{2})*,\d{3}(\.\d+)?$|^\d{1,3}(,\d{3})+(\.\d+)?$/.test(x)) return null;
+    x = x.replace(/,/g,"");
+  }
+  if(!/^\d+(\.\d+)?$/.test(x)) return null;
+  if(!sym && !x.includes(".")) return null;      /* plain integer text, leading-zero ids: leave as is */
+  let n = parseFloat(x); if(neg) n = -n;
+  return {n, sym};
+}
+
+/* sheet -> array of rows; percent cells wrapped as {keep, z} so they are never rounded */
+function sheetToRows(ws){
+  if(!ws || !ws["!ref"]) return [];
+  const rg = XLSX.utils.decode_range(ws["!ref"]), rows = [];
+  for(let r=rg.s.r; r<=rg.e.r; r++){
+    const row = []; let any = false;
+    for(let c=rg.s.c; c<=rg.e.c; c++){
+      const cell = ws[XLSX.utils.encode_cell({r,c})];
+      let v = "";
+      if(cell && cell.v !== undefined && cell.v !== null){
+        v = cell.v;
+        if(cell.t === "e") v = cell.w || "";
+        else if(cell.t === "n" && cell.z && /%/.test(cell.z)) v = {keep:cell.v, z:cell.z};
+      }
+      if(v !== "") any = true;
+      row.push(v);
+    }
+    if(any) rows.push(row);
+  }
+  return rows;
+}
+
+function transform(rows, MAP, dec = 0){
+  const k = {fixed:0, ok:0, unk:0, round:0, cur:0};
+  const width = Math.max(1, ...rows.map(r => r.length));
+  const single = width === 1;
+  const cells = rows.map(row => {
+    const out = [];
+    for(let i=0;i<width;i++){
+      const v = row[i] === undefined ? "" : row[i];
+      if(v && typeof v === "object" && "keep" in v){ out.push({v:v.keep, z:v.z, s:"other"}); continue; }
+      if(typeof v === "number"){
+        const r = rnd(v, dec);
+        const z = Number.isInteger(r) ? undefined : zf(dec);
+        if(r !== v){ k.round++; out.push({v:r, z, old:String(v), s:"changed"}); } else out.push({v, z, s:"other"});
+        continue;
+      }
+      const t = typeof v === "string" ? v.trim() : "";
+      if(!t){ out.push({v, s:"other"}); continue; }
+      const hit = MAP.get(key(t));
+      if(hit){
+        if(t === hit){ k.ok++; out.push({v:hit, s:"ok"}); }
+        else { k.fixed++; out.push({v:hit, old:t, s:"changed"}); }
+        continue;
+      }
+      const p = parseNum(t);
+      if(p){
+        const r = rnd(p.n, dec);
+        if(p.sym) k.cur++;
+        if(r !== p.n) k.round++;
+        out.push({v:r, z: Number.isInteger(r) ? undefined : zf(dec), old:t, s:"changed"});
+        continue;
+      }
+      if(single) k.unk++;
+      out.push({v, s: single ? "unk" : "other"});
+    }
+    return out;
+  });
+  return {cells, width, single, k};
+}
+/*ENDCORE*/
+
+const branches = DEFAULTS;
+const MAP = buildMap(branches);
+
+/* ---- state ---- */
+let sheets = [];      /* [{name, rows}] */
+let outs = [];        /* transform results */
+let active = 0;
+let DEC = 0;
+let needChoice = false;
+
+const $ = id => document.getElementById(id);
+function needLib(){
+  if(typeof XLSX === "undefined"){ alert("Excel library did not load. Connect to internet and reload this page."); return true; }
+  return false;
+}
+
+/* ---- upload ---- */
+const drop = $("drop"), fileIn = $("file");
+drop.onclick = () => fileIn.click();
+drop.onkeydown = e => { if(e.key==="Enter"||e.key===" "){e.preventDefault();fileIn.click();} };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); if(e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); };
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => e.preventDefault());
+fileIn.onchange = () => { const f = fileIn.files[0]; if(f) load(f); fileIn.value = ""; };
+
+function load(f){
+  if(needLib()) return;
+  $("dropTitle").textContent = f.name;
+  const ext = (f.name.split(".").pop() || "").toLowerCase();
+  const r = new FileReader();
+  r.onerror = () => alert("Could not read file.");
+  r.onload = e => {
+    try{
+      if(ext === "txt"){
+        const lines = e.target.result.replace(/^\uFEFF/,"").split(/\r?\n/).filter(l => l.trim());
+        sheets = [{name:"Sheet1", rows: lines.map(l => l.split("\t"))}];
+      } else if(ext === "csv"){
+        const wb = XLSX.read(e.target.result.replace(/^\uFEFF/,""), {type:"string", raw:true});
+        sheets = wb.SheetNames.map(n => ({name:n, rows: sheetToRows(wb.Sheets[n])}));
+      } else {
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array", cellDates:true, cellNF:true});
+        sheets = wb.SheetNames.map(n => ({name:n, rows: sheetToRows(wb.Sheets[n])}));
+      }
+      afterLoad();
+    }catch(err){ alert("Could not read file: " + err.message); }
+  };
+  (ext === "txt" || ext === "csv") ? r.readAsText(f, "UTF-8") : r.readAsArrayBuffer(f);
+}
+
+function hasDecimals(){
+  return sheets.some(sh => sh.rows.some(row => row.some(v => {
+    if(typeof v === "number") return !Number.isInteger(v);
+    if(typeof v === "string" && v.trim()){
+      if(MAP.has(key(v))) return false;
+      const p = parseNum(v); return !!p && !Number.isInteger(p.n);
+    }
+    return false;
+  })));
+}
+function afterLoad(){
+  active = 0;
+  const box = $("decBox");
+  if(hasDecimals()){
+    needChoice = true;
+    box.classList.remove("hidden");
+    document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed","false"));
+    $("result").classList.add("hidden");
+  } else {
+    needChoice = false;
+    box.classList.add("hidden");
+    process();
+  }
+}
+
+function process(){
+  if(!sheets.length || needChoice) return;
+  outs = sheets.map(s => transform(s.rows, MAP, DEC));
+  const tot = {fixed:0, ok:0, unk:0, round:0, cur:0};
+  outs.forEach(o => { for(const x in tot) tot[x] += o.k[x]; });
+  const anySingle = outs.some(o => o.single);
+  $("nChanged").textContent = tot.fixed;
+  $("nOk").textContent = tot.ok;
+  $("nUnk").textContent = anySingle ? tot.unk : "–";
+  $("nRound").textContent = tot.round;
+  $("nCur").textContent = tot.cur;
+  const sel = $("sheetSel");
+  sel.innerHTML = sheets.map((s,i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
+  sel.value = active;
+  sel.classList.toggle("hidden", sheets.length < 2);
+  render();
+  $("result").classList.remove("hidden");
+}
+$("sheetSel").onchange = e => { active = +e.target.value; render(); };
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function render(){
+  const o = outs[active];
+  if(!o || !o.cells.length){ $("tbl").innerHTML = '<tr><td class="msg">This sheet is empty.</td></tr>'; return; }
+  let h = "<tr>" + Array.from({length:o.width},(_,i)=>`<th>Col ${i+1}</th>`).join("") + "</tr>";
+  o.cells.slice(0,500).forEach(r => {
+    const ch = r.some(c => c.s==="changed");
+    h += `<tr class="${ch?"changed":""}">` + r.map(c =>
+      c.s==="changed" ? `<td><s>${esc(c.old)}</s>${esc(fmt(c.v))}</td>` :
+      c.s==="unk" ? `<td class="unk">${esc(c.v)}</td>` : `<td>${esc(fmt(c.v))}</td>`).join("") + "</tr>";
+  });
+  if(o.cells.length > 500) h += `<tr><td class="msg" colspan="${o.width}">Showing first 500 rows. Download has all rows.</td></tr>`;
+  $("tbl").innerHTML = h;
+}
+
+/* ---- downloads ---- */
+const aoa = i => outs[i].cells.map(r => r.map(c => c.v));
+function toSheet(i){
+  const ws = XLSX.utils.aoa_to_sheet(aoa(i));
+  const widths = [];
+  outs[i].cells.forEach((r,ri) => r.forEach((c,ci) => {
+    if(c.z){ const a = ws[XLSX.utils.encode_cell({r:ri,c:ci})]; if(a) a.z = c.z; }
+    const len = String(fmt(c.v) ?? "").length;
+    widths[ci] = Math.max(widths[ci] || 8, Math.min(len + 2, 50));
+  }));
+  ws["!cols"] = widths.map(w => ({wch:w}));
+  return ws;
+}
+function save(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$("dlX").onclick = () => {
+  if(!outs.length || needLib()) return;
+  const wb = XLSX.utils.book_new();
+  outs.forEach((o,i) => XLSX.utils.book_append_sheet(wb, toSheet(i), sheets[i].name.slice(0,31)));
+  XLSX.writeFile(wb, "corrected-branches.xlsx");
+};
+$("dlC").onclick = () => {
+  if(!outs.length || needLib()) return;
+  const csv = "\uFEFF" + XLSX.utils.sheet_to_csv(toSheet(active));
+  save(new Blob([csv], {type:"text/csv;charset=utf-8"}), "corrected-branches.csv");
+};
+$("dlT").onclick = () => {
+  if(!outs.length) return;
+  const t = aoa(active).map(r => r.map(fmt).join("\t")).join("\n");
+  save(new Blob([t], {type:"text/plain;charset=utf-8"}), "corrected-branches.txt");
+};
+
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  DEC = +b.dataset.d;
+  needChoice = false;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  process();
+});
+
+</script>
+</body>
+</html>
