@@ -16,7 +16,7 @@
 }
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;padding:32px 16px}
-.wrap{max-width:900px;margin:0 auto}
+.wrap{max-width:960px;margin:0 auto}
 h1{font-size:1.7rem;margin:0 0 6px;font-weight:700}
 p.sub{margin:0 0 28px;color:var(--muted)}
 .raised{background:var(--bg);border-radius:22px;box-shadow:9px 9px 18px var(--dark),-9px -9px 18px var(--light)}
@@ -28,39 +28,72 @@ p.sub{margin:0 0 28px;color:var(--muted)}
 .drop strong{display:block;font-size:1.05rem;word-break:break-all}
 .drop span{color:var(--muted);font-size:.9rem}
 input[type=file]{display:none}
-.dec{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;margin-bottom:26px}
-.dec>span{font-weight:700}
-.seg{display:flex;gap:12px;flex-wrap:wrap}
-.seg button{padding:9px 16px;font-size:.9rem;border-radius:12px;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
-.seg button[aria-pressed=true]{color:var(--accent);box-shadow:inset 4px 4px 8px var(--dark),inset -4px -4px 8px var(--light)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:18px;margin-bottom:26px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:18px;margin-bottom:26px}
 .stat{padding:16px;text-align:center}
-.stat b{display:block;font-size:1.8rem}
+.stat b{display:block;font-size:1.7rem}
 .stat small{color:var(--muted)}
-.stat.c b,.stat.r b{color:var(--ok)} .stat.o b,.stat.m b{color:var(--accent)} .stat.u b{color:var(--warn)}
+.stat.c b,.stat.r b{color:var(--ok)} .stat.o b,.stat.m b,.stat.l b{color:var(--accent)} .stat.u b{color:var(--warn)}
+
+.allok{color:var(--ok);font-weight:700;font-size:1.2rem;text-align:center;padding:18px;margin-bottom:26px}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 12px;padding:0 4px}
+.hint b{color:var(--accent)}
+button.th{padding:5px 10px;border-radius:10px;font-size:.85rem;font-weight:700;color:var(--muted);box-shadow:none;display:inline-flex;gap:6px;align-items:center;max-width:190px}
+button.th:hover{color:var(--text);box-shadow:3px 3px 6px var(--dark),-3px -3px 6px var(--light)}
+button.th span{color:var(--text)}
+button.th span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+button.th i{font-style:normal;font-size:.72rem;color:var(--accent);padding:1px 7px;border-radius:8px;box-shadow:inset 2px 2px 4px var(--dark),inset -2px -2px 4px var(--light)}
+button.th em{font-style:normal;font-size:.7rem}
+button.th.cfg span,button.th.on span{color:var(--accent)}
+button.th.on{box-shadow:inset 3px 3px 6px var(--dark),inset -3px -3px 6px var(--light)}
+.thp{font-size:.85rem;font-weight:700;color:var(--muted);padding:5px 10px;display:inline-block}
+td.selc{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.pop{position:fixed;z-index:50;width:310px;max-width:calc(100vw - 16px);padding:16px;background:var(--bg);border-radius:18px;box-shadow:9px 9px 18px var(--dark),-9px -9px 18px var(--light),0 0 0 1px var(--dark)}
+.pop h3{margin:0 0 4px;font-size:1rem;word-break:break-word}
+.pop .tags span{display:inline-block;font-size:.76rem;color:var(--muted);margin:0 10px 3px 0}
+.pop .tags span.good{color:var(--ok)} .pop .tags span.bad{color:var(--bad)}
+.pop .pn{color:var(--muted);font-size:.88rem;margin:10px 0}
+.opts{display:grid;gap:8px;margin:10px 0}
+.opts button{text-align:left;padding:9px 12px;font-size:.9rem;border-radius:12px;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light);display:flex;flex-direction:column;gap:1px}
+.opts button small{font-weight:500;color:var(--muted);font-size:.74rem}
+.opts button[aria-pressed=true],.dseg button[aria-pressed=true]{color:var(--accent);box-shadow:inset 4px 4px 8px var(--dark),inset -4px -4px 8px var(--light)}
+.lbl{font-size:.78rem;color:var(--muted);margin:6px 0 4px}
+.dseg{display:flex;gap:8px}
+.dseg button{flex:1;padding:7px 0;font-size:.88rem;border-radius:10px;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
+.symrow{display:flex;align-items:center;gap:8px;font-size:.88rem;margin:12px 0 4px;cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.ex{margin:10px 0 4px;font-size:.85rem;color:var(--muted);word-break:break-all}
+.ex b{color:var(--ok)}
+.prow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .btns{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:22px;align-items:center}
 button,select{font:inherit;font-weight:700;color:var(--text);background:var(--bg);border:0;border-radius:14px;padding:12px 22px;cursor:pointer;box-shadow:6px 6px 12px var(--dark),-6px -6px 12px var(--light);transition:box-shadow .15s}
 select{padding:11px 16px}
 button:active{box-shadow:inset 4px 4px 8px var(--dark),inset -4px -4px 8px var(--light)}
 button:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 button.primary{color:var(--accent)}
-button.sm{padding:6px 12px;border-radius:10px;font-size:.85rem;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
-button.del{color:var(--bad)}
+button.sm{padding:8px 14px;border-radius:10px;font-size:.85rem;box-shadow:4px 4px 8px var(--dark),-4px -4px 8px var(--light)}
+
+.unk{padding:14px 18px;margin-bottom:22px}
+.unk b{color:var(--bad);font-size:.92rem}
+.unk .chips{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.unk .chips span{font-size:.82rem;padding:4px 10px;border-radius:10px;color:var(--bad);box-shadow:3px 3px 6px var(--dark),-3px -3px 6px var(--light)}
+
 .tablebox{padding:14px;overflow-x:auto;max-height:480px;overflow-y:auto}
-table{border-collapse:separate;border-spacing:0 8px;width:100%;font-size:.92rem}
-th{text-align:left;color:var(--muted);font-weight:600;padding:4px 12px;position:sticky;top:0;background:var(--bg)}
-td{padding:9px 12px;white-space:nowrap}
+table{border-collapse:separate;border-spacing:0 8px;width:auto;font-size:.92rem}
+th{text-align:left;color:var(--muted);font-weight:600;padding:4px 6px;position:sticky;top:0;background:var(--bg);z-index:1}
+td{padding:9px 10px;white-space:nowrap}
 tr.changed td{color:var(--ok);font-weight:600}
 td s{color:var(--warn);font-weight:400;margin-right:6px}
 td.unk{color:var(--bad)}
 .msg{color:var(--muted);text-align:center;padding:20px}
-.hidden{display:none}
-@media(max-width:640px){.stats{gap:10px}.stat b{font-size:1.4rem}</style>
+.hidden{display:none !important}
+@media(max-width:640px){.stats{gap:10px}.stat b{font-size:1.4rem}}
+</style>
 </head>
 <body>
 <div class="wrap">
   <h1>Branch name corrector</h1>
-  <p class="sub">Fixes the branch.</p>
+  <p class="sub">Fixes branch names in any case.</p>
 
   <div class="raised drop" id="drop" tabindex="0" role="button" aria-label="Upload file">
     <div class="pressed ico">⇪</div>
@@ -69,23 +102,20 @@ td.unk{color:var(--bad)}
     <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt">
   </div>
 
-  <div class="raised dec hidden" id="decBox">
-    <span id="decLbl">Decimal values found. Round numbers to:</span>
-    <div class="seg" role="group" aria-labelledby="decLbl">
-      <button type="button" data-d="0" aria-pressed="false">0 decimals</button>
-      <button type="button" data-d="1" aria-pressed="false">1 decimal</button>
-      <button type="button" data-d="2" aria-pressed="false">2 decimals</button>
-    </div>
-  </div>
-
   <div id="result" class="hidden">
-    <div class="stats">
-      <div class="raised stat c"><b id="nChanged">0</b><small>Branch fixed</small></div>
-      <div class="raised stat o"><b id="nOk">0</b><small>Branch correct</small></div>
-      <div class="raised stat u"><b id="nUnk">0</b><small>Not found</small></div>
-      <div class="raised stat r"><b id="nRound">0</b><small>Rounded</small></div>
-      <div class="raised stat m"><b id="nCur">0</b><small>Currency cleaned</small></div>
+
+    <div class="raised allok hidden" id="allOk"></div>
+    <div class="stats" id="stats">
+      <div class="raised stat c" data-k="c"><b id="nChanged">0</b><small>Branch fixed</small></div>
+      <div class="raised stat o" data-k="o"><b id="nOk">0</b><small>Branch correct</small></div>
+      <div class="raised stat u" data-k="u"><b id="nUnk">0</b><small>Not found</small></div>
+      <div class="raised stat m" data-k="m"><b id="nCur">0</b><small>Currency cleaned</small></div>
+      <div class="raised stat l" data-k="l"><b id="nConv">0</b><small>Lakh / Crore</small></div>
+      <div class="raised stat r" data-k="r"><b id="nRound">0</b><small>Rounded</small></div>
     </div>
+
+    <div class="pressed unk hidden" id="unkBox"><b>Branch names not found in list:</b><div class="chips" id="unkList"></div></div>
+
     <div class="btns">
       <button class="primary" id="dlX">Download Excel</button>
       <button id="dlC">Download CSV</button>
@@ -96,11 +126,13 @@ td.unk{color:var(--bad)}
   </div>
 
 </div>
+<div class="pop hidden" id="pop" role="dialog" aria-label="Column options"></div>
 
 <script>
 /* ===================================================================
    BRANCH LIST. To add a new branch, add one line here:
    ["CODE","Correct Name","Wrong Name (or leave empty)"],
+   Matching ignores CASE, spaces, dashes and symbols.
    =================================================================== */
 const DEFAULTS = [
 ["APK1","Aruppukottai","Aruppukottai 1"],["APK2","Aruppukottai -2",""],["ARM1","Anjugramam-1","Anjugramam"],
@@ -119,33 +151,42 @@ const DEFAULTS = [
 ];
 
 /*CORE*/
-const key = s => String(s).toLowerCase().replace(/[^a-z0-9]/g,"");
+/* case/space/symbol-proof key: "ASM1", "asm1", " Ambasamudram - 1 " all work */
+const key = s => String(s).normalize("NFKC").toLowerCase().replace(/[^a-z0-9]/g,"");
 const rnd = (n, d = 0) => {
-  const r = Math.sign(n) * Number(Math.round(Math.abs(n) + "e" + d) + "e-" + d);
-  return r === 0 ? 0 : r;
+  if(!isFinite(n)) return n;
+  const a = Math.abs(n), s = String(a);
+  const p = Math.pow(10, d);
+  const r = /e/i.test(s) ? Math.round(a * p) / p : Number(Math.round(Number(s + "e" + d)) + "e-" + d);
+  const out = Math.sign(n) * r;
+  return out === 0 ? 0 : out;
 };
-const zf = d => d > 0 ? "0." + "0".repeat(d) : undefined;
+const zf = d => d > 0 ? "0." + "0".repeat(d) : "0";
 const pad = n => String(n).padStart(2,"0");
 const fmt = v => {
   if(v instanceof Date) return v.getFullYear()+"-"+pad(v.getMonth()+1)+"-"+pad(v.getDate());
   return v;
 };
+const colName = i => { let s = "", n = i + 1; while(n > 0){ const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
 
 function buildMap(branches){
   const out = new Map();
-  branches.forEach(([c,n]) => { if(c) out.set(key(c), n); });
-  branches.forEach(([c,n]) => { if(n && !out.has(key(n))) out.set(key(n), n); });
-  branches.forEach(([c,n,a]) => { if(a && !out.has(key(a))) out.set(key(a), n); });
+  branches.forEach(([c,n]) => { if(c && key(c)) out.set(key(c), n); });
+  branches.forEach(([c,n]) => { if(n && key(n) && !out.has(key(n))) out.set(key(n), n); });
+  branches.forEach(([c,n,a]) => { if(a && key(a) && !out.has(key(a))) out.set(key(a), n); });
   return out;
 }
+const lookup = (MAP, t) => { const k = key(t); return k ? MAP.get(k) : undefined; };
 
-/* returns {n, sym} for currency / decimal text, else null */
-function parseNum(t){
+/* returns {n, sym} for currency / numeric text, else null.
+   anyInt=true also accepts plain integers like "125000" (used when user picked a mode for the column) */
+function parseNum(t, anyInt){
   let x = String(t).trim(), neg = false;
-  const sym = /[₹$€£,]|^[\s(\-−]*(rs|inr)|\/-/i.test(x);
+  if(!x) return null;
+  const sym = /[₹$€£,]|^[\s(\-−+]*(rs|inr)|\/-/i.test(x);
   if(/^\(.*\)$/.test(x)){ neg = true; x = x.slice(1,-1); }
   x = x.replace(/\s+/g,"");
-  const sign = () => { if(/^[-−]/.test(x)){ neg = !neg; x = x.slice(1); } };
+  const sign = () => { if(/^[-−]/.test(x)){ neg = !neg; x = x.slice(1); } else if(x[0] === "+") x = x.slice(1); };
   sign();
   x = x.replace(/^(₹|\$|€|£|rs\.?|inr)/i,"");
   sign();
@@ -154,13 +195,13 @@ function parseNum(t){
     if(!/^\d{1,3}(,\d{2})*,\d{3}(\.\d+)?$|^\d{1,3}(,\d{3})+(\.\d+)?$/.test(x)) return null;
     x = x.replace(/,/g,"");
   }
-  if(!/^\d+(\.\d+)?$/.test(x)) return null;
-  if(!sym && !x.includes(".")) return null;      /* plain integer text, leading-zero ids: leave as is */
+  if(!/^\d+(\.\d+)?$|^\.\d+$/.test(x)) return null;
+  if(!sym && !x.includes(".") && !anyInt) return null;
   let n = parseFloat(x); if(neg) n = -n;
   return {n, sym};
 }
 
-/* sheet -> array of rows; percent cells wrapped as {keep, z} so they are never rounded */
+/* sheet -> array of rows; percent cells wrapped as {keep, z} so they are never touched */
 function sheetToRows(ws){
   if(!ws || !ws["!ref"]) return [];
   const rg = XLSX.utils.decode_range(ws["!ref"]), rows = [];
@@ -182,57 +223,142 @@ function sheetToRows(ws){
   return rows;
 }
 
-function transform(rows, MAP, dec = 0){
-  const k = {fixed:0, ok:0, unk:0, round:0, cur:0};
+/* returns index of header row, or -1. Title lines above it are ignored. */
+function findHeader(rows, width, MAP){
+  if(width === 1){
+    const v = rows[0] && rows[0][0];
+    return rows.length > 1 && typeof v === "string" && !lookup(MAP, v.trim()) && !parseNum(v, true)
+      && /branch|name|location|outlet|store|code|region|area|city|place|unit/i.test(v) ? 0 : -1;
+  }
+  const lim = Math.min(rows.length, 8);
+  for(let r = 0; r < lim; r++){
+    const vals = rows[r].filter(v => v !== "" && v !== undefined);
+    if(vals.length < 2) continue;                     /* title / blank-ish line */
+    if(vals.some(v => typeof v === "string" && lookup(MAP, v.trim()))) return -1;
+    const txt = vals.filter(v => typeof v === "string" && v.trim() && !parseNum(v, true)).length;
+    return txt >= 0.5 * vals.length && r < rows.length - 1 ? r : -1;
+  }
+  return -1;
+}
+
+/* look at every column: how many branch names, currency cells, decimals, etc. */
+function analyze(rows, MAP){
   const width = Math.max(1, ...rows.map(r => r.length));
-  const single = width === 1;
-  const cells = rows.map(row => {
+  const hRow = findHeader(rows, width, MAP), start = hRow + 1;
+  const cols = Array.from({length:width}, (_,i) => ({
+    i, hdr: hRow >= 0 && rows[hRow][i] !== undefined ? String(rows[hRow][i]).trim() : "",
+    branch:0, fix:0, unk:0, cur:0, dec:0, whole:0, pct:0, txt:0, maxDec:0, branchCol:false
+  }));
+  const decLen = n => Math.min(10, (String(n).split(".")[1] || "").replace(/e.*/i,"").length);
+  const unkCells = cols.map(() => 0);
+  for(let ri = start; ri < rows.length; ri++){
+    for(let i = 0; i < width; i++){
+      const v = rows[ri][i], c = cols[i];
+      if(v === undefined || v === "") continue;
+      if(v && typeof v === "object" && "keep" in v){ c.pct++; continue; }
+      if(v instanceof Date) continue;
+      if(typeof v === "number"){
+        if(Number.isInteger(v)) c.whole++; else { c.dec++; c.maxDec = Math.max(c.maxDec, decLen(v)); }
+        continue;
+      }
+      const t = String(v).trim(); if(!t) continue;
+      const hit = lookup(MAP, t);
+      if(hit){ c.branch++; if(hit !== t) c.fix++; continue; }
+      const p = parseNum(t, true);
+      if(p){
+        if(p.sym) c.cur++;
+        if(!Number.isInteger(p.n)){ c.dec++; c.maxDec = Math.max(c.maxDec, decLen(p.n)); }
+        else if(!p.sym) c.whole++;
+        continue;
+      }
+      c.txt++;
+    }
+  }
+  cols.forEach(c => {
+    c.branchCol = width === 1 ? (c.branch + c.txt > 0) : (c.branch > 0 && c.branch >= 0.3 * (c.branch + c.txt));
+    c.numeric = c.cur + c.dec + c.whole > 0;
+    if(c.branchCol) c.unk = c.txt;
+  });
+  return {width, hRow, start, cols};
+}
+
+function defaultCfg(c){
+  const num = c.cur + c.dec > 0;
+  return {mode:"keep", dec: Math.min(c.maxDec, 2), sym:false};
+}
+
+/* convert one number according to the column setting */
+function convert(n, cfg){
+  const unit = cfg.mode === "lakh" ? "L" : cfg.mode === "crore" ? "Cr" : "";
+  const div  = cfg.mode === "lakh" ? 1e5 : cfg.mode === "crore" ? 1e7 : 1;
+  const d = cfg.dec;
+  const r = rnd(n / div, d);
+  const num = r.toFixed(d);
+  if(unit && cfg.sym) return {v:num + " " + unit, txt:num + " " + unit, r};
+  return {v:r, z:zf(d), txt:num, r};
+}
+
+function transform(rows, MAP, cfgs, an){
+  const k = {fixed:0, ok:0, unk:0, round:0, cur:0, conv:0};
+  const unkMap = new Map(), found = new Set();
+  const width = an.width;
+  const cells = rows.map((row, ri) => {
     const out = [];
     for(let i=0;i<width;i++){
       const v = row[i] === undefined ? "" : row[i];
+      const cfg = cfgs[i] || {mode:"keep", dec:0, sym:false};
+      if(ri < an.start){ out.push({v, s:"other"}); continue; }
       if(v && typeof v === "object" && "keep" in v){ out.push({v:v.keep, z:v.z, s:"other"}); continue; }
       if(typeof v === "number"){
-        const r = rnd(v, dec);
-        const z = Number.isInteger(r) ? undefined : zf(dec);
-        if(r !== v){ k.round++; out.push({v:r, z, old:String(v), s:"changed"}); } else out.push({v, z, s:"other"});
+        if(cfg.mode === "keep"){ out.push({v, s:"other"}); continue; }
+        const c = convert(v, cfg);
+        if(cfg.mode === "plain"){
+          if(c.r !== v){ k.round++; out.push({v:c.v, z:c.z, txt:c.txt, old:String(v), s:"changed"}); }
+          else out.push({v:c.v, z:c.z, txt:c.txt, s:"other"});
+        } else {
+          k.conv++; out.push({v:c.v, z:c.z, txt:c.txt, old:String(v), s:"changed"});
+        }
         continue;
       }
       const t = typeof v === "string" ? v.trim() : "";
       if(!t){ out.push({v, s:"other"}); continue; }
-      const hit = MAP.get(key(t));
+      const hit = lookup(MAP, t);
       if(hit){
+        found.add(hit);
         if(t === hit){ k.ok++; out.push({v:hit, s:"ok"}); }
         else { k.fixed++; out.push({v:hit, old:t, s:"changed"}); }
         continue;
       }
-      const p = parseNum(t);
-      if(p){
-        const r = rnd(p.n, dec);
+      const p = parseNum(t, cfg.mode !== "keep");
+      if(p && cfg.mode !== "keep"){
+        const c = convert(p.n, cfg);
         if(p.sym) k.cur++;
-        if(r !== p.n) k.round++;
-        out.push({v:r, z: Number.isInteger(r) ? undefined : zf(dec), old:t, s:"changed"});
+        if(cfg.mode === "plain"){ if(c.r !== p.n) k.round++; } else k.conv++;
+        out.push({v:c.v, z:c.z, txt:c.txt, old:t, s:"changed"});
         continue;
       }
-      if(single) k.unk++;
-      out.push({v, s: single ? "unk" : "other"});
+      if(an.cols[i].branchCol && !parseNum(t, true)){
+        k.unk++; unkMap.set(t, (unkMap.get(t) || 0) + 1);
+        out.push({v, s:"unk"});
+      } else out.push({v, s:"other"});
     }
     return out;
   });
-  return {cells, width, single, k};
+  return {cells, width, k, unk:[...unkMap.entries()], found:[...found]};
 }
 /*ENDCORE*/
 
-const branches = DEFAULTS;
-const MAP = buildMap(branches);
+const MAP = buildMap(DEFAULTS);
 
 /* ---- state ---- */
-let sheets = [];      /* [{name, rows}] */
-let outs = [];        /* transform results */
+let sheets = [];   /* [{name, rows}] */
+let an = [];       /* analysis per sheet */
+let cfgs = [];     /* column settings per sheet */
+let outs = [];     /* transform results per sheet */
 let active = 0;
-let DEC = 0;
-let needChoice = false;
 
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function needLib(){
   if(typeof XLSX === "undefined"){ alert("Excel library did not load. Connect to internet and reload this page."); return true; }
   return false;
@@ -273,75 +399,171 @@ function load(f){
   (ext === "txt" || ext === "csv") ? r.readAsText(f, "UTF-8") : r.readAsArrayBuffer(f);
 }
 
-function hasDecimals(){
-  return sheets.some(sh => sh.rows.some(row => row.some(v => {
-    if(typeof v === "number") return !Number.isInteger(v);
-    if(typeof v === "string" && v.trim()){
-      if(MAP.has(key(v))) return false;
-      const p = parseNum(v); return !!p && !Number.isInteger(p.n);
-    }
-    return false;
-  })));
-}
 function afterLoad(){
   active = 0;
-  const box = $("decBox");
-  if(hasDecimals()){
-    needChoice = true;
-    box.classList.remove("hidden");
-    document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed","false"));
-    $("result").classList.add("hidden");
-  } else {
-    needChoice = false;
-    box.classList.add("hidden");
-    process();
-  }
-}
-
-function process(){
-  if(!sheets.length || needChoice) return;
-  outs = sheets.map(s => transform(s.rows, MAP, DEC));
-  const tot = {fixed:0, ok:0, unk:0, round:0, cur:0};
-  outs.forEach(o => { for(const x in tot) tot[x] += o.k[x]; });
-  const anySingle = outs.some(o => o.single);
-  $("nChanged").textContent = tot.fixed;
-  $("nOk").textContent = tot.ok;
-  $("nUnk").textContent = anySingle ? tot.unk : "–";
-  $("nRound").textContent = tot.round;
-  $("nCur").textContent = tot.cur;
+  an = sheets.map(s => analyze(s.rows, MAP));
+  cfgs = an.map(a => a.cols.map(defaultCfg));
   const sel = $("sheetSel");
   sel.innerHTML = sheets.map((s,i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
-  sel.value = active;
+  sel.value = 0;
   sel.classList.toggle("hidden", sheets.length < 2);
-  render();
+  selCol = -1; pop.classList.add("hidden");
+  refresh();
   $("result").classList.remove("hidden");
 }
-$("sheetSel").onchange = e => { active = +e.target.value; render(); };
+$("sheetSel").onchange = e => { active = +e.target.value; selCol = -1; pop.classList.add("hidden"); refresh(); };
 
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+/* ---- click-a-column popover ---- */
+const pop = $("pop");
+let selCol = -1;
+const MODES = [["keep","Leave as is"],["plain","Currency → Number"],["lakh","Lakhs (L)"],["crore","Crore (Cr)"]];
+function badge(g){
+  if(!g || g.mode === "keep") return "";
+  return (g.mode === "lakh" ? "L" : g.mode === "crore" ? "Cr" : "123") + " · " + g.dec + "dp";
+}
+function sampleFor(i){
+  const rows = sheets[active].rows;
+  for(let r = an[active].start; r < rows.length; r++){
+    const v = rows[r][i];
+    if(typeof v === "number") return {raw:String(v), n:v};
+    if(typeof v === "string" && v.trim() && !lookup(MAP, v.trim())){
+      const p = parseNum(v.trim(), true); if(p) return {raw:v.trim(), n:p.n};
+    }
+  }
+  return null;
+}
+function drawPop(){
+  const i = selCol, c = an[active].cols[i], g = cfgs[active][i];
+  let h = `<h3>${esc(c.hdr || "Column " + colName(i))}</h3>`;
+  if(c.numeric){
+    h += `<div class="opts">` + MODES.map(([v,t]) => `<button type="button" data-m="${v}" aria-pressed="${g.mode===v}">${t}</button>`).join("") + `</div>`;
+    if(g.mode !== "keep"){
+      h += `<div class="lbl">Decimals</div><div class="dseg">` + [0,1,2,3,4].map(d => `<button type="button" data-d="${d}" aria-pressed="${g.dec===d}">${d}</button>`).join("") + `</div>`;
+      const u = unitOf(g.mode);
+      if(u) h += `<label class="symrow"><input type="checkbox" id="pSym"${g.sym ? " checked" : ""}> Add "${u}" symbol</label>`;
+      const s = sampleFor(i);
+      if(s){ const r = convert(s.n, g); h += `<div class="ex">${esc(s.raw)} → <b>${esc(r.txt)}</b></div>`; }
+    }
+  }
+  h += `<div class="prow">` + (c.numeric && g.mode !== "keep" ? `<button type="button" class="sm" id="pAll">Apply to all number columns</button>` : "") + `<button type="button" class="sm" id="pClose">Close</button></div>`;
+  pop.innerHTML = h;
+  pop.classList.remove("hidden");
+}
+const unitOf = m => m === "lakh" ? "L" : m === "crore" ? "Cr" : "";
+function placePop(){
+  const th = $("tbl").querySelector(`.th[data-c="${selCol}"]`);
+  if(!th){ pop.style.visibility = "hidden"; return; }
+  const r = th.getBoundingClientRect(), box = document.querySelector(".tablebox").getBoundingClientRect();
+  if(r.bottom < box.top || r.top > box.bottom || r.right < box.left || r.left > box.right){ pop.style.visibility = "hidden"; return; }
+  pop.style.visibility = "visible";
+  const w = pop.offsetWidth || 310, ph = pop.offsetHeight;
+  const left = Math.min(Math.max(8, r.left), Math.max(8, innerWidth - w - 8));
+  let top = r.bottom + 8;
+  if(top + ph > innerHeight - 8) top = Math.max(8, r.top - ph - 8);
+  pop.style.left = left + "px"; pop.style.top = top + "px";
+}
+function openPop(i){ selCol = i; drawPop(); render(); }
+function closePop(){ if(selCol < 0) return; selCol = -1; pop.classList.add("hidden"); render(); }
 
-function render(){
-  const o = outs[active];
-  if(!o || !o.cells.length){ $("tbl").innerHTML = '<tr><td class="msg">This sheet is empty.</td></tr>'; return; }
-  let h = "<tr>" + Array.from({length:o.width},(_,i)=>`<th>Col ${i+1}</th>`).join("") + "</tr>";
-  o.cells.slice(0,500).forEach(r => {
-    const ch = r.some(c => c.s==="changed");
-    h += `<tr class="${ch?"changed":""}">` + r.map(c =>
-      c.s==="changed" ? `<td><s>${esc(c.old)}</s>${esc(fmt(c.v))}</td>` :
-      c.s==="unk" ? `<td class="unk">${esc(c.v)}</td>` : `<td>${esc(fmt(c.v))}</td>`).join("") + "</tr>";
+$("tbl").addEventListener("click", e => {
+  const t = e.target.closest(".th"); if(!t) return;
+  e.stopPropagation();
+  const i = +t.dataset.c;
+  selCol === i ? closePop() : openPop(i);
+});
+pop.addEventListener("click", e => {
+  e.stopPropagation();
+  const b = e.target.closest("button"); if(!b) return;
+  const g = cfgs[active][selCol], c = an[active].cols[selCol];
+  if(b.id === "pClose"){ closePop(); return; }
+  if(b.dataset.m){
+    const prev = g.mode; g.mode = b.dataset.m;
+    if(g.mode === "plain" && prev !== "plain") g.dec = Math.min(c.maxDec, 2);
+    if((g.mode === "lakh" || g.mode === "crore") && (prev === "keep" || prev === "plain")) g.dec = 2;
+  } else if(b.dataset.d){ g.dec = +b.dataset.d; }
+  else if(b.id === "pAll"){ an[active].cols.forEach((col,i) => { if(col.numeric) cfgs[active][i] = {...g}; }); }
+  else return;
+  if(g.mode !== "lakh" && g.mode !== "crore") g.sym = false;
+  drawPop(); refresh();
+});
+pop.addEventListener("change", e => {
+  if(e.target.id === "pSym"){ cfgs[active][selCol].sym = e.target.checked; drawPop(); refresh(); }
+});
+document.addEventListener("click", () => closePop());
+document.addEventListener("keydown", e => { if(e.key === "Escape") closePop(); });
+const reflow = () => { if(selCol >= 0) placePop(); };
+document.querySelector(".tablebox").addEventListener("scroll", reflow);
+addEventListener("scroll", reflow); addEventListener("resize", reflow);
+
+/* ---- compute + draw ---- */
+function refresh(){
+  if(!sheets.length) return;
+  outs = sheets.map((s,i) => transform(s.rows, MAP, cfgs[i], an[i]));
+  const tot = {fixed:0, ok:0, unk:0, round:0, cur:0, conv:0};
+  outs.forEach(o => { for(const x in tot) tot[x] += o.k[x]; });
+  $("nChanged").textContent = tot.fixed;
+  $("nOk").textContent = tot.ok;
+  $("nUnk").textContent = tot.unk;
+  $("nRound").textContent = tot.round;
+  $("nCur").textContent = tot.cur;
+  $("nConv").textContent = tot.conv;
+  const TOTAL = new Set(DEFAULTS.map(b => b[1])).size;
+  const seen = new Set(); outs.forEach(o => o.found.forEach(n => seen.add(n)));
+  const allFound = seen.size >= TOTAL;
+  const allOk = !allFound && tot.fixed === 0 && tot.unk === 0 && tot.ok > 0;
+  const ab = $("allOk");
+  ab.classList.toggle("hidden", !(allFound || allOk));
+  if(allFound) ab.textContent = "All " + TOTAL + " branches found";
+  else if(allOk) ab.textContent = tot.ok === 1 ? "Branch is correct" : "All " + tot.ok + " branches are correct";
+  let vis = 0;
+  document.querySelectorAll("#stats .stat").forEach(el => {
+    const k = el.dataset.k, n = {c:tot.fixed, o:tot.ok, u:tot.unk, m:tot.cur, l:tot.conv, r:tot.round}[k];
+    const hide = n === 0 || k === "o" || (k === "u" && allFound);
+    el.classList.toggle("hidden", hide); if(!hide) vis++;
   });
-  if(o.cells.length > 500) h += `<tr><td class="msg" colspan="${o.width}">Showing first 500 rows. Download has all rows.</td></tr>`;
+  $("stats").classList.toggle("hidden", vis === 0);
+  window.__allFound = allFound;
+  const u = outs[active].unk;
+  $("unkBox").classList.toggle("hidden", !u.length || allFound);
+  $("unkList").innerHTML = u.slice(0,60).map(([t,n]) => `<span>${esc(t)}${n>1?" ×"+n:""}</span>`).join("") + (u.length > 60 ? `<span>+${u.length-60} more</span>` : "");
+  render();
+}
+
+const shown = c => c.txt !== undefined ? c.txt : fmt(c.v);
+function render(){
+  const o = outs[active], a = an[active], cf = cfgs[active];
+  if(!o || o.cells.length <= a.start){ $("tbl").innerHTML = '<tr><td class="msg">This sheet is empty.</td></tr>'; return; }
+  let h = "<tr>" + Array.from({length:o.width}, (_,i) => {
+    const col = a.cols[i], b = badge(cf[i]), name = col.hdr || colName(i);
+    if(!col.numeric) return `<th><span class="thp">${esc(name)}</span></th>`;
+    return `<th><button type="button" class="th${i===selCol?" on":""}${b?" cfg":""}" data-c="${i}" aria-label="${esc(name)} options"><span>${esc(name)}</span>${b ? `<i>${b}</i>` : ""}<em>▾</em></button></th>`;
+  }).join("") + "</tr>";
+  const rows = o.cells.slice(a.start, a.start + 500);
+  rows.forEach(r => {
+    const ch = r.some(c => c.s==="changed");
+    h += `<tr class="${ch?"changed":""}">` + r.map((c,i) => {
+      const cls = [i===selCol ? "selc" : "", c.s==="unk" ? "unk" : ""].filter(Boolean).join(" ");
+      const at = cls ? ` class="${cls}"` : "";
+      return c.s==="changed" ? `<td${at}><s>${esc(c.old)}</s>${esc(shown(c))}</td>` : c.s==="unk" ? `<td${at}>${esc(c.v)}</td>` : `<td${at}>${esc(shown(c))}</td>`;
+    }).join("") + "</tr>";
+  });
+  if(o.cells.length - a.start > 500) h += `<tr><td class="msg" colspan="${o.width}">Showing first 500 rows. Download has all rows.</td></tr>`;
   $("tbl").innerHTML = h;
+  if(selCol >= 0) placePop();
 }
 
 /* ---- downloads ---- */
 const aoa = i => outs[i].cells.map(r => r.map(c => c.v));
 function toSheet(i){
-  const ws = XLSX.utils.aoa_to_sheet(aoa(i));
+  const ws = XLSX.utils.aoa_to_sheet(aoa(i), {cellDates:true});
   const widths = [];
   outs[i].cells.forEach((r,ri) => r.forEach((c,ci) => {
-    if(c.z){ const a = ws[XLSX.utils.encode_cell({r:ri,c:ci})]; if(a) a.z = c.z; }
-    const len = String(fmt(c.v) ?? "").length;
+    const a = ws[XLSX.utils.encode_cell({r:ri,c:ci})];
+    if(a){
+      if(c.z && a.t === "n") a.z = c.z;
+      else if(c.v instanceof Date) a.z = "yyyy-mm-dd";
+    }
+    const len = String(shown(c) ?? "").length;
     widths[ci] = Math.max(widths[ci] || 8, Math.min(len + 2, 50));
   }));
   ws["!cols"] = widths.map(w => ({wch:w}));
@@ -355,8 +577,14 @@ function save(blob, name){
 $("dlX").onclick = () => {
   if(!outs.length || needLib()) return;
   const wb = XLSX.utils.book_new();
-  outs.forEach((o,i) => XLSX.utils.book_append_sheet(wb, toSheet(i), sheets[i].name.slice(0,31)));
-  XLSX.writeFile(wb, "corrected-branches.xlsx");
+  const used = new Set();
+  outs.forEach((o,i) => {
+    let n = sheets[i].name.replace(/[\\\/?*\[\]:]/g,"_").slice(0,31) || "Sheet" + (i+1);
+    while(used.has(n.toLowerCase())) n = n.slice(0,28) + "_" + (i+1);
+    used.add(n.toLowerCase());
+    XLSX.utils.book_append_sheet(wb, toSheet(i), n);
+  });
+  XLSX.writeFile(wb, "corrected-branches.xlsx", {cellDates:true});
 };
 $("dlC").onclick = () => {
   if(!outs.length || needLib()) return;
@@ -365,17 +593,9 @@ $("dlC").onclick = () => {
 };
 $("dlT").onclick = () => {
   if(!outs.length) return;
-  const t = aoa(active).map(r => r.map(fmt).join("\t")).join("\n");
+  const t = outs[active].cells.map(r => r.map(shown).join("\t")).join("\n");
   save(new Blob([t], {type:"text/plain;charset=utf-8"}), "corrected-branches.txt");
 };
-
-document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
-  DEC = +b.dataset.d;
-  needChoice = false;
-  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-  process();
-});
-
 </script>
 </body>
 </html>
