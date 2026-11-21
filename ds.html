@@ -7,9 +7,6 @@
 <link rel="icon" type="image/webp" href="https://www.sathya.store/favicon.webp">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-<script type="importmap">
-{ "imports": { "@paddleocr/paddleocr-js": "https://esm.sh/@paddleocr/paddleocr-js@0.4.2" } }
-</script>
 
 <style>
 :root{
@@ -50,14 +47,19 @@ header::before{content:'';position:absolute;inset:0;background:url("data:image/s
 .dz .lbl b{color:var(--p)}
 .badge{position:absolute;top:8px;left:8px;font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:6px;font-family:'DM Mono',monospace;letter-spacing:.5px}
 .badge-req{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}
-.badge-opt{background:var(--subtle);color:#fff}
-.dz .prev{max-height:68px;max-width:100%;border-radius:8px;object-fit:contain;display:none;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.dz.has .prev{display:block}.dz.has .icon,.dz.has .lbl{display:none}
 .dz .fn{font-size:.68rem;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px;display:none;word-break:break-all;font-weight:500}
 .dz.has .fn{display:block}
+.dz.has .lbl{display:none}
 .clr{position:absolute;top:7px;right:7px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:.65rem;padding:3px 7px;cursor:pointer;display:none;z-index:10;font-weight:700;transition:all .15s}
 .clr:hover{background:#b91c1c;transform:scale(1.05)}
 .dz.has .clr{display:block}
+.metric{display:none;margin-bottom:20px;padding:14px 16px;border:1.5px solid var(--border);border-radius:14px;background:#fafbff}
+.metric.show{display:block}
+.metric-q{font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--p);margin-bottom:10px}
+.metric-opts{display:flex;gap:10px;flex-wrap:wrap}
+.mopt{border:2px solid var(--border);background:var(--white);color:var(--muted);border-radius:10px;padding:9px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s}
+.mopt:hover{border-color:var(--p);color:var(--p)}
+.mopt.sel{border-color:var(--p);background:var(--p-light);color:var(--p)}
 .go{background:linear-gradient(135deg,#6c47ff,#a78bfa);color:#fff;border:none;border-radius:12px;padding:13px 32px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;box-shadow:0 4px 16px rgba(108,71,255,.3);letter-spacing:.2px}
 .go:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,71,255,.4)}
 .go:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
@@ -105,6 +107,14 @@ tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important
 .em{color:var(--subtle);font-style:normal}
 .val-sp{color:#ea580c;font-weight:600}
 .val-ew{color:#0284c7;font-weight:600}
+#tbr td:first-child{color:var(--text);font-weight:600}
+#tbr td:nth-child(2){color:#ea580c}
+#tbr tr.tot td{color:var(--p)}
+.thr-box{display:none;margin-top:16px}
+.thr-row{display:flex;align-items:center;gap:8px}
+.thr-in{width:120px;border:2px solid var(--border);border-radius:10px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;font-weight:600;color:var(--text);background:var(--white);outline:none;transition:border-color .15s}
+.thr-in:focus{border-color:var(--p)}
+.thr-pct{font-family:'DM Mono',monospace;font-weight:700;color:var(--muted)}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.hinner{padding:18px 16px}.dbg-grid{grid-template-columns:1fr}.hbadges{display:none}}
 </style>
 </head>
@@ -118,63 +128,59 @@ tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important
       <p>Branch Sales Price & Extended Warranty Analyser</p>
     </div>
     <div class="hbadges">
-      <span class="hbadge">36 Branches</span>
-      <span class="hbadge">PaddleOCR 3.0</span>
+      <span class="hbadge">37 Branches</span>
+      <span class="hbadge">Excel Upload</span>
       <span class="hbadge">Auto Excel</span>
     </div>
   </div>
 </header>
 
 <div class="wrap">
-  <div class="notice">
-    <span class="notice-icon">ℹ️</span>
-    <span>🔍 <b>Local OCR</b> — Powered by PaddleOCR 3.0 (runs in browser), reads branch names & values directly from images. No API key needed.</span>
-  </div>
-
   <div class="card">
-    <div class="card-title">📁 Upload Images</div>
+    <div class="card-title">📁 Upload Excel Files</div>
     <div class="grid">
       <div>
-        <div class="grp-label grp-sp">💰 Sales Price</div>
+        <div class="grp-label grp-sp">💰 Sales File</div>
         <div class="dz" id="d1" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,1)">
-          <span class="badge badge-req">IMG 1</span>
+          <span class="badge badge-req">SALES</span>
           <button class="clr" onclick="cl(1,event)">✕</button>
-          <div class="icon">🖼️</div>
+          <div class="icon">📗</div>
           <div class="lbl">Drop or click · <b>Required</b></div>
-          <img class="prev" id="p1"/><div class="fn" id="f1"></div>
-          <input type="file" accept="image/*" onchange="hf(this,1)">
-        </div>
-        <div class="dz opt" id="d2" style="margin-top:10px" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,2)">
-          <span class="badge badge-opt">IMG 2 · Optional</span>
-          <button class="clr" onclick="cl(2,event)">✕</button>
-          <div class="icon">🖼️</div>
-          <div class="lbl">Drop or click · <b>Optional</b></div>
-          <img class="prev" id="p2"/><div class="fn" id="f2"></div>
-          <input type="file" accept="image/*" onchange="hf(this,2)">
+          <div class="fn" id="f1"></div>
+          <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onchange="hf(this,1)">
         </div>
       </div>
       <div>
-        <div class="grp-label grp-ew">🛡️ Extended Warranty (EW)</div>
-        <div class="dz" id="d3" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,3)">
-          <span class="badge badge-req">IMG 3</span>
-          <button class="clr" onclick="cl(3,event)">✕</button>
-          <div class="icon">🖼️</div>
+        <div class="grp-label grp-ew">🛡️ Extended Warranty (EW) File</div>
+        <div class="dz" id="d2" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,2)">
+          <span class="badge badge-req">EW</span>
+          <button class="clr" onclick="cl(2,event)">✕</button>
+          <div class="icon">📗</div>
           <div class="lbl">Drop or click · <b>Required</b></div>
-          <img class="prev" id="p3"/><div class="fn" id="f3"></div>
-          <input type="file" accept="image/*" onchange="hf(this,3)">
-        </div>
-        <div class="dz opt" id="d4" style="margin-top:10px" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dp(event,this,4)">
-          <span class="badge badge-opt">IMG 4 · Optional</span>
-          <button class="clr" onclick="cl(4,event)">✕</button>
-          <div class="icon">🖼️</div>
-          <div class="lbl">Drop or click · <b>Optional</b></div>
-          <img class="prev" id="p4"/><div class="fn" id="f4"></div>
-          <input type="file" accept="image/*" onchange="hf(this,4)">
+          <div class="fn" id="f2"></div>
+          <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onchange="hf(this,2)">
         </div>
       </div>
     </div>
+
+    <div class="metric" id="metric">
+      <div class="metric-q">What do you want to calculate?</div>
+      <div class="metric-opts">
+        <button class="mopt" id="m-qty" onclick="pick('qty')">🔢 Sales Qty</button>
+        <button class="mopt" id="m-val" onclick="pick('val')">💰 Sales Values</button>
+      </div>
+      <div class="thr-box" id="thrBox">
+        <div class="metric-q">Mark Ach% red for</div>
+        <div class="metric-opts">
+          <button class="mopt" id="k-tot" onclick="pickMark('tot')">📊 TA</button>
+          <button class="mopt" id="k-cus" onclick="pickMark('cus')">✏️ Custom</button>
+        </div>
+        <div class="thr-row" id="thrRow" style="display:none;margin-top:12px"><input type="number" class="thr-in" id="thr" min="0" step="0.1" placeholder="e.g. 30" oninput="cr()"><span class="thr-pct">%</span></div>
+      </div>
+    </div>
+
     <button class="go" id="btn" onclick="run()" disabled>
-      <span>🔍</span> Extract & Build Table
+      <span>🔍</span> Do
     </button>
     <div id="progWrap" style="display:none;margin-top:12px">
       <div style="font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px" id="progLabel">Processing...</div>
@@ -182,77 +188,87 @@ tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important
     </div>
   </div>
 
-  <div class="status" id="st">Ready — upload Image 1 + Image 3 to start.</div>
-
-  <div id="dbg" style="display:none">
-    <div class="dbg-wrap">
-      <div class="dbg-title">
-        🔬 Raw OCR Output (Debug)
-        <button class="hide-btn" onclick="document.getElementById('dbg').style.display='none'">Hide</button>
-      </div>
-      <div class="dbg-grid">
-        <div>
-          <div class="dbg-sub dbg-sub-s">💰 SALES (IMG 1/2)</div>
-          <pre class="dbg-pre" id="dbgS">—</pre>
-        </div>
-        <div>
-          <div class="dbg-sub dbg-sub-e">🛡️ EW (IMG 3/4)</div>
-          <pre class="dbg-pre" id="dbgE">—</pre>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="status" id="st">Ready — upload Sales file + EW file to start.</div>
 
   <div class="card">
     <div class="thead-row">
       <h2>📋 Results</h2>
-      <button class="exp" id="xbtn" onclick="xls()" disabled>⬇ Export Excel</button>
+      <button class="exp" id="xbtn" onclick="xls()" disabled>⬇ Save Excel</button>
     </div>
     <div class="tw">
       <table>
-        <thead><tr><th>S.No</th><th>Branch</th><th>Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
+        <thead><tr><th>S.No</th><th>Branch</th><th id="thSp">Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
         <tbody id="tb">
-          <tr><td colspan="5" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload images and click Extract</td></tr>
+          <tr><td colspan="5" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload Excel files and click Extract</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="thead-row" style="margin-top:22px"><h2>🗺️ Region</h2></div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Region</th><th id="thSp2">Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
+        <tbody id="tbr">
+          <tr><td colspan="4" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload Excel files and click Extract</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<script type="module">
-import { PaddleOCR } from "@paddleocr/paddleocr-js";
+<script>
+const BR=["Ambasamudram-1","Anjugramam-1","Aruppukottai","Aruppukottai -2","Colachel-1","Eral-2","Kalakadu-1","Karungal-1","Kayathar-1","Kovilpatti","Kulasekharam-1","Marthandam","Monday Market","Nagercoil","Paramakudi","Puliyankudi-1","Rajapalayam","Ramnad","Sankarankovil-1","Sattur-2","Sayalkudi-1","Sengottai","Sivakasi","Surandai-1","Thenkasi","Thenkasi-2","Thiruchendur-1","Thisayanvilai-1","Thuckalay-1","Tirunelveli-1","Tuticorin-1","Tuticorin-2","Udankudi","Valliyur-1","Villathikullam","Virudhunagar","Virudhunagar-2"];
+// Region -> branch list. New branch: add its name here AND in BR above (names must match BR exactly).
+const REGIONS=[
+  ["TKS1",["Thenkasi","Thenkasi-2","Surandai-1","Puliyankudi-1","Sengottai","Rajapalayam"]],
+  ["Tuticorin",["Tuticorin-1","Tuticorin-2","Thiruchendur-1","Thisayanvilai-1","Eral-2","Udankudi"]],
+  ["KVT1",["Kovilpatti","Ramnad","Paramakudi","Sayalkudi-1","Villathikullam","Sattur-2","Sankarankovil-1","Kayathar-1"]],
+  ["VNR1",["Virudhunagar","Virudhunagar-2","Aruppukottai -2","Aruppukottai","Sivakasi"]],
+  ["Tirunelveli",["Tirunelveli-1","Valliyur-1","Ambasamudram-1","Anjugramam-1","Kalakadu-1"]],
+  ["NGR1",["Nagercoil","Marthandam","Thuckalay-1","Colachel-1","Kulasekharam-1","Monday Market","Karungal-1"]]
+];
+const fs={1:null,2:null};
+let METRIC=null;
+let THR=0;
+let MARK=null;
 
-const BR=["Ambasamudram-1","Anjugramam-1","Aruppukottai","Aruppukottai -2","Colachel-1","Eral-2","Karungal-1","Kayathar-1","Kovilpatti","Kulasekharam-1","Marthandam","Monday Market","Nagercoil","Paramakudi","Puliyankudi-1","Rajapalayam","Ramnad","Sankarankovil-1","Sattur-2","Sayalkudi-1","Sengottai","Sivakasi","Surandai-1","Thenkasi","Thenkasi-2","Thiruchendur-1","Thisayanvilai-1","Thuckalay-1","Tirunelveli-1","Tuticorin-1","Tuticorin-2","Udankudi","Valliyur-1","Villathikullam","Virudhunagar","Virudhunagar-2"];
-const fs={1:null,2:null,3:null,4:null};
-
-let ocrInstance=null;
-async function getOCR(){
-  if(!ocrInstance){
-    ocrInstance=await PaddleOCR.create({lang:"en",ocrVersion:"PP-OCRv5",ortOptions:{backend:"wasm"}});
-  }
-  return ocrInstance;
-}
-
-window.addEventListener('DOMContentLoaded',()=>{cr()});
-
+const isXl=f=>/\.(xlsx|xls|xlsm|csv)$/i.test(f.name);
 window.hf=function(inp,s){const f=inp.files[0];if(f)set(s,f)}
 function set(s,f){
   fs[s]=f;const d=document.getElementById('d'+s);
   d.classList.add('has');
-  document.getElementById('p'+s).src=URL.createObjectURL(f);
   document.getElementById('f'+s).textContent=f.name;
   cr();
 }
 window.cl=function(s,e){
   e.stopPropagation();fs[s]=null;
   const d=document.getElementById('d'+s);d.classList.remove('has');
-  document.getElementById('p'+s).src='';document.getElementById('f'+s).textContent='';
+  document.getElementById('f'+s).textContent='';
   d.querySelector('input').value='';cr();
 }
 window.dg=function(e,el){e.preventDefault();el.classList.add('over')}
 window.dl=function(el){el.classList.remove('over')}
-window.dp=function(e,el,s){e.preventDefault();el.classList.remove('over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))set(s,f)}
-function cr(){document.getElementById('btn').disabled=!(fs[1]&&fs[3])}
+window.dp=function(e,el,s){e.preventDefault();el.classList.remove('over');const f=e.dataTransfer.files[0];if(f&&isXl(f))set(s,f)}
+window.pickMark=function(k){
+  MARK=k;
+  document.getElementById('k-tot').classList.toggle('sel',k==='tot');
+  document.getElementById('k-cus').classList.toggle('sel',k==='cus');
+  cr();
+}
+window.pick=function(m){
+  METRIC=m;
+  document.getElementById('m-qty').classList.toggle('sel',m==='qty');
+  document.getElementById('m-val').classList.toggle('sel',m==='val');
+  cr();
+}
+function cr(){
+  const both=!!(fs[1]&&fs[2]);
+  document.getElementById('metric').classList.toggle('show',both);
+  document.getElementById('thrBox').style.display=METRIC?'block':'none';
+  document.getElementById('thrRow').style.display=MARK==='cus'?'flex':'none';
+  const t=parseFloat(document.getElementById('thr').value);
+  const markOk=MARK==='tot'||(MARK==='cus'&&!isNaN(t)&&t>=0);
+  document.getElementById('btn').disabled=!(both&&METRIC&&markOk);
+}
 function ss(m,t=''){
   const el=document.getElementById('st');
   el.className='status '+(t==='run'?'run':t==='ok'?'ok2':t==='err'?'err':'');
@@ -266,8 +282,10 @@ function showProg(pct,label){
 function hideProg(){document.getElementById('progWrap').style.display='none'}
 
 function parseNum(s){
+  if(s===null||s===undefined)return null;
+  if(typeof s==='number')return isFinite(s)?s:null;
+  s=String(s).replace(/[₹$]/g,'').trim();
   if(!s)return null;
-  s=s.replace(/[₹$]/g,'').trim();
   if(/^[–\-]+$/.test(s))return 0;
   const n=parseFloat(s.replace(/,/g,''));
   return isNaN(n)?null:n;
@@ -294,55 +312,51 @@ function mkMap(data){
   return m;
 }
 
-async function ocrExtract(file,label){
+const QTY_RE=/\bqty\b|quantity|\bunits?\b|\bnos\b/i;
+const VAL_RE=/price|value|amount|\bamt\b|revenue/i;
+function isHdr(t,metric){
+  if(metric==='qty')return QTY_RE.test(t);
+  return VAL_RE.test(t)&&!QTY_RE.test(t);
+}
+function branchCell(cell){
+  if(typeof cell!=='string')return null;
+  const t=cell.trim();
+  if(t.length<3||!/[a-zA-Z]/.test(t))return null;
+  return mb(t);
+}
+
+async function excelExtract(file,label,metric){
   showProg(30,label);
-  const ocr=await getOCR();
+  const buf=await file.arrayBuffer();
   showProg(60,label);
-  const [result]=await ocr.predict(file);
-  showProg(90,label);
-
+  const wb=XLSX.read(buf,{type:'array'});
   const rows=[];
-  const lo=s=>s.toLowerCase();
-
-  for(const item of result.items){
-    const line=item.text.trim();
-    if(!line)continue;
-    for(const name of BR){
-      const ln=lo(name),ll=lo(line);
-      if(ll.includes(ln)||ln.includes(ll)||lo(name.replace(/[\s\-]/g,'')).includes(lo(line.replace(/[\s\-]/g,'')))){
-        const nm=line.match(/[\d,]+\.?\d*/);
-        if(nm){
-          const val=parseNum(nm[0]);
-          if(val!==null){rows.push({branch:name,value:val});break;}
-        }else{
-          rows.push({branch:name,value:0});break;
-        }
+  for(const sn of wb.SheetNames){
+    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:true});
+    let hcols=[];
+    for(const row of aoa){
+      let bi=-1,name=null;
+      for(let c=0;c<row.length;c++){
+        const br=branchCell(row[c]);
+        if(br){bi=c;name=br;break;}
       }
+      if(name===null){
+        const hc=[];
+        for(let c=0;c<row.length;c++){
+          const cell=row[c];
+          if(typeof cell==='string'&&isHdr(cell.trim(),metric))hc.push(c);
+        }
+        if(hc.length)hcols=hc;
+        continue;
+      }
+      if(!hcols.length)continue;
+      const col=hcols.find(c=>c>bi)??hcols.reduce((a,b)=>Math.abs(b-bi)<Math.abs(a-bi)?b:a);
+      const v=parseNum(row[col]);
+      rows.push({branch:name,value:v===null?0:v});
     }
   }
-
-  if(rows.length===0){
-    const fullText=result.items.map(i=>i.text).join('\n');
-    const lines=fullText.split('\n').filter(l=>l.trim());
-    for(let i=0;i<lines.length;i++){
-      const line=lines[i].trim();
-      for(const name of BR){
-        const ln=lo(name),ll=lo(line);
-        if(ll.includes(ln)||ln.includes(ll)){
-          let val=0;
-          const nm=line.match(/[\d,]+\.?\d*/);
-          if(nm)val=parseNum(nm[0])||0;
-          else if(i+1<lines.length){
-            const nm2=lines[i+1].match(/[\d,]+\.?\d*/);
-            if(nm2)val=parseNum(nm2[0])||0;
-          }
-          rows.push({branch:name,value:val});break;
-        }
-      }
-    }
-  }
-
   showProg(100,label);
+  if(!rows.length)throw new Error('No branch rows with a '+(metric==='qty'?'Qty':'Value / Price')+' column found in '+file.name);
   return rows;
 }
 
@@ -351,25 +365,19 @@ window.run=async function(){
   document.getElementById('btn').disabled=true;
   document.getElementById('xbtn').disabled=true;
   try{
-    ss('Step 1/2 — Loading PaddleOCR engine (first run downloads models)...','run');
-    await getOCR();
-
-    ss('Step 2/2 — Reading Sales Price & EW images...','run');
-    let sData=[];
-    if(fs[1])sData=sData.concat(await ocrExtract(fs[1],'Reading Sales Price Image 1...'));
-    if(fs[2])sData=sData.concat(await ocrExtract(fs[2],'Reading Sales Price Image 2...'));
-
-    let eData=[];
-    if(fs[3])eData=eData.concat(await ocrExtract(fs[3],'Reading EW Image 1...'));
-    if(fs[4])eData=eData.concat(await ocrExtract(fs[4],'Reading EW Image 2...'));
+    const lbl=METRIC==='qty'?'Sales Qty':'Sales Values';
+    ss('Reading '+lbl+' from Sales & EW Excel files...','run');
+    const sData=await excelExtract(fs[1],'Reading Sales file...',METRIC);
+    const eData=await excelExtract(fs[2],'Reading EW file...',METRIC);
     hideProg();
 
-    document.getElementById('dbg').style.display='block';
-    document.getElementById('dbgS').textContent=JSON.stringify(sData,null,2)||'—';
-    document.getElementById('dbgE').textContent=JSON.stringify(eData,null,2)||'—';
+    document.getElementById('thSp').textContent=METRIC==='qty'?'Sales Qty':'Sales Price';
+    document.getElementById('thSp2').textContent=METRIC==='qty'?'Sales Qty':'Sales Price';
 
+    THR=MARK==='cus'?parseFloat(document.getElementById('thr').value):0;
     buildTable(mkMap(sData),mkMap(eData));
-    ss('✓ Done — PaddleOCR extraction complete','ok');
+    const inReg=new Set(REGIONS.flatMap(g=>g[1])),miss=BR.filter(b=>!inReg.has(b));
+    ss('✓ Done — Excel extraction complete ('+lbl+')'+(miss.length?' · ⚠ not in any Region: '+miss.join(', '):''),'ok');
     document.getElementById('xbtn').disabled=false;
   }catch(e){ss('✗ Error: '+e.message,'err');console.error(e);hideProg()}
   document.getElementById('btn').disabled=false;
@@ -387,16 +395,27 @@ function buildTable(sm,em){
   const tsp=rows.reduce((s,r)=>s+(r.sp!==null?r.sp:0),0);
   const tew=rows.reduce((s,r)=>s+(r.ew!==null?r.ew:0),0);
   const tach=tsp>0?Math.min(tew/tsp*100,100):0;
-  TD={rows,tsp,tew,tach};
+  const spM={},ewM={};
+  rows.forEach(r=>{spM[r.b]=r.sp||0;ewM[r.b]=r.ew||0});
+  const regs=REGIONS.map(([name,list])=>{
+    const sp=list.reduce((s,b)=>s+(spM[b]||0),0),ew=list.reduce((s,b)=>s+(ewM[b]||0),0);
+    return{name,list,sp,ew,ach:sp===0?0:ew/sp*100};
+  });
+  regs.sort((a,b)=>b.ach-a.ach);
+  const rsp=regs.reduce((s,g)=>s+g.sp,0),rew=regs.reduce((s,g)=>s+g.ew,0);
+  const rach=rsp===0?0:rew/rsp*100;
+  TD={rows,tsp,tew,tach,regs,rsp,rew,rach,thr:THR,mark:MARK};
   render();
 }
 
+function isRed(a,total){const r1=v=>Math.round(v*10+1e-9)/10;return r1(a)<=r1(TD.mark==='tot'?total:TD.thr)}
+
 function render(){
-  const{rows,tsp,tew,tach}=TD,th=tach,tb=document.getElementById('tb');
+  const{rows,tsp,tew,tach,regs,rsp,rew,rach}=TD,tb=document.getElementById('tb');
   tb.innerHTML='';
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    const red=th!==null&&r.ach<=th;
+    const red=isRed(r.ach,tach);
     if(red)tr.className='red-row';
     const achHtml='<span class="pill '+(red?'pill-r':'pill-g')+'">'+r.ach.toFixed(1)+'%</span>';
     tr.innerHTML='<td>'+r.sno+'</td><td>'+r.b+'</td><td class="val-sp">'+(r.sp!==null?n(r.sp):'<span class="em">—</span>')+'</td><td class="val-ew">'+(r.ew!==null?n(r.ew):'<span class="em">—</span>')+'</td><td class="ach">'+achHtml+'</td>';
@@ -406,42 +425,102 @@ function render(){
   const tot=document.createElement('tr');tot.className='tot';
   tot.innerHTML='<td></td><td>TOTAL</td><td>'+n(tsp)+'</td><td>'+n(tew)+'</td><td>'+achTotHtml+'</td>';
   tb.appendChild(tot);
+
+  const tbr=document.getElementById('tbr');
+  tbr.innerHTML='';
+  regs.forEach(g=>{
+    const tr=document.createElement('tr');
+    const red=isRed(g.ach,rach);
+    if(red)tr.className='red-row';
+    tr.innerHTML='<td>'+g.name+'</td><td>'+n(g.sp)+'</td><td class="val-ew">'+n(g.ew)+'</td><td class="ach"><span class="pill '+(red?'pill-r':'pill-g')+'">'+g.ach.toFixed(1)+'%</span></td>';
+    tbr.appendChild(tr);
+  });
+  const rt=document.createElement('tr');rt.className='tot';
+  rt.innerHTML='<td>TOTAL</td><td>'+n(rsp)+'</td><td>'+n(rew)+'</td><td><span class="pill pill-g">'+rach.toFixed(1)+'%</span></td>';
+  tbr.appendChild(rt);
 }
 function n(v){return v==null?'':Number(v).toLocaleString('en-IN')}
 
 window.xls=function(){
   if(!TD)return;
-  const{rows,tsp,tew,tach}=TD;
+  const{rows,tsp,tew,tach,regs,rsp,rew,rach}=TD;
   const wb=XLSX.utils.book_new();
-  const aoa=[['S.No','Branch','Sales Price','EW','Ach%']];
-  rows.forEach(r=>aoa.push([r.sno,r.b,r.sp!==null?r.sp:'',r.ew!==null?r.ew:'',r.ach/100]));
-  aoa.push(['','TOTAL',tsp,tew,tach/100]);
-  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const ws={};
+  const lbl=METRIC==='qty'?'Sales Qty':'Sales Price';
+  const S=v=>({t:'s',v}),Nn=v=>({t:'n',v}),F=(f,v)=>({t:'n',f,v});
+  const put=(r,c,cell)=>{ws[XLSX.utils.encode_cell({r:r-1,c})]=cell};
+  const N=rows.length,first=3,last=N+2,totR=N+3;
+  const rg=c=>'$'+c+'$'+first+':$'+c+'$'+last;
+
+  // Branch block
+  const dt=new Date(),pad=v=>String(v).padStart(2,'0');
+  const title='Till now Sales vs EW '+pad(dt.getDate())+'-'+pad(dt.getMonth()+1)+'-'+dt.getFullYear();
+  put(1,1,S(title));for(let c=2;c<=4;c++)put(1,c,S(''));
+  ['S.No','Branch',lbl,'EW','Ach%'].forEach((h,c)=>put(2,c,S(h)));
+  rows.forEach((r,i)=>{
+    const x=first+i;
+    put(x,0,Nn(r.sno));put(x,1,S(r.b));
+    put(x,2,r.sp!==null?Nn(r.sp):S(''));
+    put(x,3,r.ew!==null?Nn(r.ew):S(''));
+    put(x,4,F('IFERROR(MIN(D'+x+'/C'+x+',1),0)',r.ach/100));
+  });
+  put(totR,0,S(''));put(totR,1,S('TOTAL'));
+  put(totR,2,F('SUM(C'+first+':C'+last+')',tsp));
+  put(totR,3,F('SUM(D'+first+':D'+last+')',tew));
+  put(totR,4,F('IFERROR(MIN(D'+totR+'/C'+totR+',1),0)',tach/100));
+
+  // Region block
+  const regH=totR+2,regFirst=regH+1,regLast=regH+regs.length,regTot=regLast+1;
+  ['Region',lbl,'EW','Ach%'].forEach((h,i)=>put(regH,i+1,S(h)));
+  const sumifs=(list,col)=>list.length?list.map(b=>'SUMIF('+rg('B')+',"'+b+'",'+rg(col)+')').join('+'):'0';
+  regs.forEach((g,i)=>{
+    const x=regFirst+i;
+    put(x,1,S(g.name));
+    put(x,2,F(sumifs(g.list,'C'),g.sp));
+    put(x,3,F(sumifs(g.list,'D'),g.ew));
+    put(x,4,F('IF(C'+x+'=0,0,D'+x+'/C'+x+')',g.ach/100));
+  });
+  put(regTot,1,S('TOTAL'));
+  put(regTot,2,F('SUM(C'+regFirst+':C'+regLast+')',rsp));
+  put(regTot,3,F('SUM(D'+regFirst+':D'+regLast+')',rew));
+  put(regTot,4,F('IF(C'+regTot+'=0,0,D'+regTot+'/C'+regTot+')',rach/100));
+
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:regTot-1,c:4}});
+  ws['!merges']=[{s:{r:0,c:1},e:{r:0,c:4}}];
   ws['!cols']=[{wch:6},{wch:26},{wch:18},{wch:18},{wch:10}];
+
   const RED='FF0000',WHITE='FFFFFF',BLACK='000000',LIGHTRED='FFC7CE',DARKRED='9C0006';
   const border={style:'thin',color:{rgb:BLACK}};
   const allBorders={top:border,bottom:border,left:border,right:border};
-  const totalRows=aoa.length;
-  for(let R=0;R<totalRows;R++){
-    const isHeader=R===0;
-    const isTotalRow=R===totalRows-1;
-    const dataIdx=R-1;
-    const isRedRow=!isHeader&&!isTotalRow&&rows[dataIdx]&&rows[dataIdx].ach<=tach;
-    for(let C=0;C<=4;C++){
-      const ref=XLSX.utils.encode_cell({r:R,c:C});
-      if(!ws[ref])ws[ref]={t:'s',v:''};
+  // kind: 'hdr' | 'dat' | 'tot'
+  const style=(x,c0,kind,redAch)=>{
+    for(let C=c0;C<=4;C++){
+      const ref=XLSX.utils.encode_cell({r:x-1,c:C});
+      if(!ws[ref])ws[ref]=S('');
       const cell=ws[ref];
-      if(C===4&&!isHeader){cell.t='n';cell.z='0.0%';}
+      if(kind!=='hdr'){
+        if(C===4)cell.z='0.0%';
+        if(C===2||C===3)cell.z='#,##,##0';
+      }
       cell.s={alignment:{horizontal:'center',vertical:'center'},border:allBorders,font:{},fill:{}};
-      if(isHeader||isTotalRow){cell.s.fill={fgColor:{rgb:RED}};cell.s.font={bold:true,color:{rgb:WHITE},sz:11};}
-      else if(isRedRow&&C===4){cell.s.fill={fgColor:{rgb:LIGHTRED}};cell.s.font={color:{rgb:DARKRED}};}
+      if(kind==='hdr'||kind==='tot'){cell.s.fill={fgColor:{rgb:RED}};cell.s.font={bold:true,color:{rgb:WHITE},sz:11};}
+      else if(redAch&&C===4){cell.s.fill={fgColor:{rgb:LIGHTRED}};cell.s.font={color:{rgb:DARKRED}};}
       else{cell.s.fill={fgColor:{rgb:WHITE}};cell.s.font={color:{rgb:BLACK}};}
-      if((C===2||C===3)&&!isHeader){cell.z='#,##,##0';}
     }
-  }
-  ws['!rows']=Array(totalRows).fill({hpt:18});
-  ws['!rows'][0]={hpt:26};
-  ws['!rows'][totalRows-1]={hpt:26};
+  };
+  style(1,1,'hdr');
+  style(2,0,'hdr');
+  rows.forEach((r,i)=>style(first+i,0,'dat',isRed(r.ach,tach)));
+  style(totR,0,'tot');
+  style(regH,1,'hdr');
+  regs.forEach((g,i)=>style(regFirst+i,1,'dat',isRed(g.ach,rach)));
+  style(regTot,1,'tot');
+
+  const hp=[];
+  for(let x=1;x<=regTot;x++)hp.push({hpt:18});
+  [1,2,totR,regH,regTot].forEach(x=>hp[x-1]={hpt:26});
+  ws['!rows']=hp;
+
   XLSX.utils.book_append_sheet(wb,ws,'EW Tracker');
   XLSX.writeFile(wb,'ds.xlsx',{cellStyles:true});
 }
