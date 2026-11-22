@@ -92,15 +92,11 @@ thead th:last-child{border-radius:0 14px 0 0}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
 tbody tr:hover{background:#f5f3ff}
 tbody td{padding:10px 16px;color:var(--text)}
-tbody td:first-child{color:var(--subtle);font-weight:500}
-tbody td:nth-child(2){font-weight:600;color:var(--text)}
+tbody td:first-child{color:var(--text);font-weight:600}
 td.ach{font-weight:700;color:var(--green)}
 .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
 .pill-g{background:var(--green-light);color:var(--green)}
-.pill-r{background:var(--red-light);color:var(--red)}
-tr.red-row{background:linear-gradient(90deg,#fff5f5,#fff)}
-tr.red-row:hover{background:#fee2e2}
-tr.red-row td:nth-child(2){color:var(--red)}
+.pill-r{background:none;color:var(--red)}
 tr.tot{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important}
 tr.tot td{font-weight:800;color:var(--p);font-size:.82rem;border-top:2px solid var(--p)}
 tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important}
@@ -197,9 +193,9 @@ tr.tot:hover{background:linear-gradient(135deg,var(--p-light),#e0f2fe)!important
     </div>
     <div class="tw">
       <table>
-        <thead><tr><th>S.No</th><th>Branch</th><th id="thSp">Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
+        <thead><tr><th>Branch</th><th id="thSp">Sales Price</th><th>EW</th><th>Ach%</th></tr></thead>
         <tbody id="tb">
-          <tr><td colspan="5" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload Excel files and click Extract</td></tr>
+          <tr><td colspan="4" style="text-align:center;color:var(--subtle);padding:32px;font-size:.8rem">Upload Excel files and click Extract</td></tr>
         </tbody>
       </table>
     </div>
@@ -388,10 +384,9 @@ function buildTable(sm,em){
     const sp=sm[b]??null,ew=em[b]??null;
     const spR=sp!==null?Math.round(sp):null,ewR=ew!==null?Math.round(ew):null;
     const ach=(spR&&spR!==0&&ewR)?Math.min(ewR/spR*100,100):0;
-    return{sno:i+1,b,sp:spR,ew:ewR,ach};
+    return{b,sp:spR,ew:ewR,ach};
   });
   rows.sort((a,b)=>b.ach-a.ach);
-  rows.forEach((r,i)=>r.sno=i+1);
   const tsp=rows.reduce((s,r)=>s+(r.sp!==null?r.sp:0),0);
   const tew=rows.reduce((s,r)=>s+(r.ew!==null?r.ew:0),0);
   const tach=tsp>0?Math.min(tew/tsp*100,100):0;
@@ -418,12 +413,12 @@ function render(){
     const red=isRed(r.ach,tach);
     if(red)tr.className='red-row';
     const achHtml='<span class="pill '+(red?'pill-r':'pill-g')+'">'+r.ach.toFixed(1)+'%</span>';
-    tr.innerHTML='<td>'+r.sno+'</td><td>'+r.b+'</td><td class="val-sp">'+(r.sp!==null?n(r.sp):'<span class="em">—</span>')+'</td><td class="val-ew">'+(r.ew!==null?n(r.ew):'<span class="em">—</span>')+'</td><td class="ach">'+achHtml+'</td>';
+    tr.innerHTML='<td>'+r.b+'</td><td class="val-sp">'+(r.sp!==null?n(r.sp):'<span class="em">—</span>')+'</td><td class="val-ew">'+(r.ew!==null?n(r.ew):'<span class="em">—</span>')+'</td><td class="ach">'+achHtml+'</td>';
     tb.appendChild(tr);
   });
   const achTotHtml='<span class="pill pill-g">'+tach.toFixed(1)+'%</span>';
   const tot=document.createElement('tr');tot.className='tot';
-  tot.innerHTML='<td></td><td>TOTAL</td><td>'+n(tsp)+'</td><td>'+n(tew)+'</td><td>'+achTotHtml+'</td>';
+  tot.innerHTML='<td>TOTAL</td><td>'+n(tsp)+'</td><td>'+n(tew)+'</td><td>'+achTotHtml+'</td>';
   tb.appendChild(tot);
 
   const tbr=document.getElementById('tbr');
@@ -432,7 +427,7 @@ function render(){
     const tr=document.createElement('tr');
     const red=isRed(g.ach,rach);
     if(red)tr.className='red-row';
-    tr.innerHTML='<td>'+g.name+'</td><td>'+n(g.sp)+'</td><td class="val-ew">'+n(g.ew)+'</td><td class="ach"><span class="pill '+(red?'pill-r':'pill-g')+'">'+g.ach.toFixed(1)+'%</span></td>';
+    tr.innerHTML='<td>'+g.name+'</td><td class="val-sp">'+n(g.sp)+'</td><td class="val-ew">'+n(g.ew)+'</td><td class="ach"><span class="pill '+(red?'pill-r':'pill-g')+'">'+g.ach.toFixed(1)+'%</span></td>';
     tbr.appendChild(tr);
   });
   const rt=document.createElement('tr');rt.className='tot';
@@ -452,69 +447,69 @@ window.xls=function(){
   const N=rows.length,first=3,last=N+2,totR=N+3;
   const rg=c=>'$'+c+'$'+first+':$'+c+'$'+last;
 
-  // Branch block
+  // Branch block (A Branch | B Sales | C EW | D Ach%)
   const dt=new Date(),pad=v=>String(v).padStart(2,'0');
   const title='Till now Sales vs EW '+pad(dt.getDate())+'-'+pad(dt.getMonth()+1)+'-'+dt.getFullYear();
-  put(1,1,S(title));for(let c=2;c<=4;c++)put(1,c,S(''));
-  ['S.No','Branch',lbl,'EW','Ach%'].forEach((h,c)=>put(2,c,S(h)));
+  put(1,0,S(title));for(let c=1;c<=3;c++)put(1,c,S(''));
+  ['Branch',lbl,'EW','Ach%'].forEach((h,c)=>put(2,c,S(h)));
   rows.forEach((r,i)=>{
     const x=first+i;
-    put(x,0,Nn(r.sno));put(x,1,S(r.b));
-    put(x,2,r.sp!==null?Nn(r.sp):S(''));
-    put(x,3,r.ew!==null?Nn(r.ew):S(''));
-    put(x,4,F('IFERROR(MIN(D'+x+'/C'+x+',1),0)',r.ach/100));
+    put(x,0,S(r.b));
+    put(x,1,r.sp!==null?Nn(r.sp):S(''));
+    put(x,2,r.ew!==null?Nn(r.ew):S(''));
+    put(x,3,F('IFERROR(MIN(C'+x+'/B'+x+',1),0)',r.ach/100));
   });
-  put(totR,0,S(''));put(totR,1,S('TOTAL'));
-  put(totR,2,F('SUM(C'+first+':C'+last+')',tsp));
-  put(totR,3,F('SUM(D'+first+':D'+last+')',tew));
-  put(totR,4,F('IFERROR(MIN(D'+totR+'/C'+totR+',1),0)',tach/100));
+  put(totR,0,S('TOTAL'));
+  put(totR,1,F('SUM(B'+first+':B'+last+')',tsp));
+  put(totR,2,F('SUM(C'+first+':C'+last+')',tew));
+  put(totR,3,F('IFERROR(MIN(C'+totR+'/B'+totR+',1),0)',tach/100));
 
   // Region block
   const regH=totR+2,regFirst=regH+1,regLast=regH+regs.length,regTot=regLast+1;
-  ['Region',lbl,'EW','Ach%'].forEach((h,i)=>put(regH,i+1,S(h)));
-  const sumifs=(list,col)=>list.length?list.map(b=>'SUMIF('+rg('B')+',"'+b+'",'+rg(col)+')').join('+'):'0';
+  ['Region',lbl,'EW','Ach%'].forEach((h,c)=>put(regH,c,S(h)));
+  const sumifs=(list,col)=>list.length?list.map(b=>'SUMIF('+rg('A')+',"'+b+'",'+rg(col)+')').join('+'):'0';
   regs.forEach((g,i)=>{
     const x=regFirst+i;
-    put(x,1,S(g.name));
-    put(x,2,F(sumifs(g.list,'C'),g.sp));
-    put(x,3,F(sumifs(g.list,'D'),g.ew));
-    put(x,4,F('IF(C'+x+'=0,0,D'+x+'/C'+x+')',g.ach/100));
+    put(x,0,S(g.name));
+    put(x,1,F(sumifs(g.list,'B'),g.sp));
+    put(x,2,F(sumifs(g.list,'C'),g.ew));
+    put(x,3,F('IF(B'+x+'=0,0,C'+x+'/B'+x+')',g.ach/100));
   });
-  put(regTot,1,S('TOTAL'));
-  put(regTot,2,F('SUM(C'+regFirst+':C'+regLast+')',rsp));
-  put(regTot,3,F('SUM(D'+regFirst+':D'+regLast+')',rew));
-  put(regTot,4,F('IF(C'+regTot+'=0,0,D'+regTot+'/C'+regTot+')',rach/100));
+  put(regTot,0,S('TOTAL'));
+  put(regTot,1,F('SUM(B'+regFirst+':B'+regLast+')',rsp));
+  put(regTot,2,F('SUM(C'+regFirst+':C'+regLast+')',rew));
+  put(regTot,3,F('IF(B'+regTot+'=0,0,C'+regTot+'/B'+regTot+')',rach/100));
 
-  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:regTot-1,c:4}});
-  ws['!merges']=[{s:{r:0,c:1},e:{r:0,c:4}}];
-  ws['!cols']=[{wch:6},{wch:26},{wch:18},{wch:18},{wch:10}];
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:regTot-1,c:3}});
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:3}}];
+  ws['!cols']=[{wch:26},{wch:18},{wch:18},{wch:10}];
 
-  const RED='FF0000',WHITE='FFFFFF',BLACK='000000',LIGHTRED='FFC7CE',DARKRED='9C0006';
+  const RED='FF0000',WHITE='FFFFFF',BLACK='000000';
   const border={style:'thin',color:{rgb:BLACK}};
   const allBorders={top:border,bottom:border,left:border,right:border};
   // kind: 'hdr' | 'dat' | 'tot'
-  const style=(x,c0,kind,redAch)=>{
-    for(let C=c0;C<=4;C++){
+  const style=(x,kind,redAch)=>{
+    for(let C=0;C<=3;C++){
       const ref=XLSX.utils.encode_cell({r:x-1,c:C});
       if(!ws[ref])ws[ref]=S('');
       const cell=ws[ref];
       if(kind!=='hdr'){
-        if(C===4)cell.z='0.0%';
-        if(C===2||C===3)cell.z='#,##,##0';
+        if(C===3)cell.z='0.0%';
+        if(C===1||C===2)cell.z='#,##,##0';
       }
       cell.s={alignment:{horizontal:'center',vertical:'center'},border:allBorders,font:{},fill:{}};
       if(kind==='hdr'||kind==='tot'){cell.s.fill={fgColor:{rgb:RED}};cell.s.font={bold:true,color:{rgb:WHITE},sz:11};}
-      else if(redAch&&C===4){cell.s.fill={fgColor:{rgb:LIGHTRED}};cell.s.font={color:{rgb:DARKRED}};}
+      else if(redAch&&C===3){cell.s.fill={fgColor:{rgb:WHITE}};cell.s.font={color:{rgb:RED}};}
       else{cell.s.fill={fgColor:{rgb:WHITE}};cell.s.font={color:{rgb:BLACK}};}
     }
   };
-  style(1,1,'hdr');
-  style(2,0,'hdr');
-  rows.forEach((r,i)=>style(first+i,0,'dat',isRed(r.ach,tach)));
-  style(totR,0,'tot');
-  style(regH,1,'hdr');
-  regs.forEach((g,i)=>style(regFirst+i,1,'dat',isRed(g.ach,rach)));
-  style(regTot,1,'tot');
+  style(1,'hdr');
+  style(2,'hdr');
+  rows.forEach((r,i)=>style(first+i,'dat',isRed(r.ach,tach)));
+  style(totR,'tot');
+  style(regH,'hdr');
+  regs.forEach((g,i)=>style(regFirst+i,'dat',isRed(g.ach,rach)));
+  style(regTot,'tot');
 
   const hp=[];
   for(let x=1;x<=regTot;x++)hp.push({hpt:18});
