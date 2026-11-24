@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EW Commitment vs Sales</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--soft:#eef1f6;--line:#dfe4ec;--tx:#162033;--dim:#5b6a80;--ac:#0b7a5c;--acbg:#0b7a5c14;--am:#a86a00;--rd:#c0343b;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;color-scheme:light}
+@media not all{:root:not([data-theme="light"]){--bg:#0e131c;--card:#161d2a;--soft:#1d2636;--line:#29344a;--tx:#e8edf6;--dim:#93a1b8;--ac:#35d3a3;--acbg:#35d3a31c;--am:#f0b74a;--rd:#ff7b82;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e131c;--card:#161d2a;--soft:#1d2636;--line:#29344a;--tx:#e8edf6;--dim:#93a1b8;--ac:#35d3a3;--acbg:#35d3a31c;--am:#f0b74a;--rd:#ff7b82;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);padding:env(safe-area-inset-top,0px) 0 calc(40px + env(safe-area-inset-bottom,0px))}
+header{background:var(--card);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.hd{display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:20px 0 16px}
+h1{margin:0;font-size:clamp(20px,3.2vw,28px);font-weight:800;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--ac)}
+.sub{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.date{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:5px 12px;color:var(--dim)}
+.ctl,select,input[type=text]{font:inherit;font-size:13px;color:var(--tx);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+.ctl:focus,select:focus,input:focus{outline:2px solid var(--ac);outline-offset:-1px}
+[hidden]{display:none!important}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:18px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi b{display:block;font-family:var(--mono);font-size:22px;margin-top:4px}
+.kpi small{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.bar{height:6px;border-radius:9px;background:var(--soft);margin-top:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;overflow:hidden}
+.ch{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ch h2{margin:0;font-size:16px}.ch p{margin:4px 0 0;color:var(--dim);font-size:12.5px;line-height:1.5}
+.step{font-family:var(--mono);font-size:10.5px;color:var(--ac);letter-spacing:.14em;text-transform:uppercase}
+.cb{padding:16px 18px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.row:first-child{margin-top:0}
+.btn{font:inherit;font-weight:600;font-size:13px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--tx);padding:9px 15px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ac);color:var(--ac)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.p{background:var(--ac);border-color:var(--ac);color:var(--bg)}.btn.p:hover:not(:disabled){filter:brightness(1.08);color:var(--bg)}
+.btn.s{padding:5px 10px;font-size:12px}
+input[type=file]{font-size:12.5px;color:var(--dim);max-width:100%}
+input[type=file]::file-selector-button{font:inherit;font-weight:600;font-size:12.5px;background:var(--soft);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin-right:10px;cursor:pointer}
+.st{font-family:var(--mono);font-size:12px;color:var(--dim)}.st.ok{color:var(--ac)}.st.err{color:var(--rd)}
+.ts{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;background:var(--soft);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:9px 10px;text-align:center;white-space:nowrap}
+td{padding:7px 10px;border-top:1px solid var(--line);text-align:center}
+td:first-child,th:first-child{text-align:left}
+tfoot td{background:var(--soft);font-weight:700}
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td input.c{width:100%;min-width:84px;font-family:var(--mono);font-size:12.5px;text-align:right;background:var(--soft);color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+td select{width:100%;min-width:130px;font-size:12px;padding:5px}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 9px;border-radius:99px;border:1px solid;white-space:nowrap}
+.pill.g{color:var(--ac);background:var(--acbg);border-color:var(--ac)}.pill.m{color:var(--am);border-color:var(--am)}.pill.l{color:var(--rd);border-color:var(--rd)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;font-weight:600;border:0;background:transparent;color:var(--dim);padding:8px 14px;cursor:pointer}
+.seg button.on{background:var(--ac);color:var(--bg)}
+.lbl{font-size:12px;color:var(--dim);font-weight:600}
+.foot{text-align:center;color:var(--dim);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="hd">
+  <div>
+    <h1 id="title"></h1>
+    <div class="sub">
+      
+      <select id="hSel" aria-label="Company">
+        <option value="zopper">Zopper</option><option value="onsitego">OnsiteGO</option>
+        <option value="lg">LG</option><option value="haier">Haier</option>
+        <option value="custom">Custom (full heading)</option>
+        <option value="template">Custom with Template (EW Commitment vs Sales)</option>
+      </select>
+      <input type="text" id="hTxt" maxlength="60" hidden aria-label="Custom text">
+      <button type="button" class="btn s" id="dSel" title="Click to add / remove date in heading"></button>
+      <div class="seg" id="lblSeg" title="Column name"><button data-v="Commitment" class="on">Commitment</button><button data-v="Target">Target</button></div>
+    </div>
+  </div>
+  <button class="btn s" id="btnTheme">Theme</button>
+</div></div></header>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <section class="card">
+      <div class="ch"><div><div class="step">Step 1</div><h2>Update <span class="L">Commitment</span></h2>
+        <p>Optional. Pick Excel with Branch + commitment/target column. Applies instantly. Skip if unchanged.</p></div></div>
+      <div class="cb">
+        <div class="row"><input type="file" id="fCommit" accept=".xlsx,.xls,.csv"></div>
+        <div class="row"><span class="st" id="sCommit"></span></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="ch"><div><div class="step">Step 2</div><h2>Upload sales Excel</h2>
+        <p>Needs Branch + Sales Price columns. Same-branch rows are summed. Runs in browser.</p></div></div>
+      <div class="cb">
+        <div class="row"><input type="file" id="fSales" accept=".xlsx,.xls,.csv"></div>
+        <div class="row"><span class="st" id="sSales"></span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" id="review" hidden>
+    <div class="ch"><div><div class="step">Review</div><h2>Check branch matches</h2><p>Fix any wrong match with the dropdown. Unmatched rows are skipped.</p></div>
+      <div class="row" style="margin:0"><button class="btn p" id="bApply">Apply to Sales</button><span class="st" id="sApply"></span></div></div>
+    <div class="cb"><div class="ts"><table><thead><tr><th>Excel branch</th><th>Matched</th><th>Match</th><th>Sales price</th><th></th></tr></thead><tbody id="rv"></tbody></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="ch"><div><div class="step">Step 3</div><h2>Branch <span class="L">Commitment</span> vs sales</h2>
+      <p>Both columns editable. Edits save automatically in this browser.</p></div>
+      <div class="row" style="margin:0">
+        <select id="sort" aria-label="Sort"><option value="name">Sort: Name</option><option value="ach">Sort: Ach % high→low</option><option value="sales">Sort: Sales high→low</option></select>
+        <button class="btn s" id="bRC">Reset <span class="L">commitment</span></button>
+        <button class="btn s" id="bRS">Reset sales</button>
+      </div></div>
+    <div class="cb"><div class="ts"><table>
+      <thead><tr><th>Branch</th><th class="L">Commitment</th><th>Sales</th><th>Ach %</th></tr></thead>
+      <tbody id="main"></tbody><tfoot><tr id="mainT"></tr></tfoot></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="ch"><div><div class="step">Step 4</div><h2>Region rollup</h2><p>Auto-computed from branches, sorted by %.</p></div></div>
+    <div class="cb">
+      <div class="ts" style="max-height:none"><table>
+        <thead><tr><th>Region</th><th>AGM</th><th>Target</th><th>Sales</th><th>%</th></tr></thead>
+        <tbody id="reg"></tbody><tfoot><tr id="regT"></tr></tfoot></table></div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn p" id="bDl">Download Excel (.xlsx)</button>
+        <span class="st" id="sDl"></span>
+      </div>
+    </div>
+  </section>
+  <p class="foot">All math runs locally. Excel keeps live formulas (Ach % = Sales / <span class="L">Commitment</span>, regions via SUMIF).</p>
+</div>
+
+<script>
+const DEF=[["Ambasamudram-1",6000],["Anjugramam-1",4000],["Aruppukottai",10000],["Aruppukottai -2",7000],["Colachel-1",2000],["Eral-2",7000],["Kalakadu-1",0],["Karungal-1",7000],["Kayathar-1",6000],["Kovilpatti",30000],["Kulasekharam-1",5000],["Marthandam",12000],["Monday Market",6000],["Nagercoil",25000],["Paramakudi",10000],["Puliyankudi-1",5000],["Rajapalayam",10000],["Ramnad",10000],["Ramnad-2",10000],["Sankarankovil-1",5000],["Sattur-2",3000],["Sayalkudi-1",6000],["Sengottai-1",3000],["Sivakasi",5000],["Surandai-1",5000],["Thenkasi",8000],["Thenkasi-2",15000],["Thiruchendur-1",10000],["Thisayanvilai-1",8000],["Thuckalay-1",5000],["Tirunelveli-1",20000],["Tuticorin-1",70000],["Tuticorin-2",20000],["Udankudi",5000],["Valliyur-1",15000],["Villathikullam",6000],["Virudhunagar",5000],["Virudhunagar-2",20000]];
+const REGIONS=[
+{code:"VNR1",agm:"Venkatesh",b:["Virudhunagar","Virudhunagar-2","Aruppukottai -2","Aruppukottai","Sivakasi"]},
+{code:"KVT1",agm:"Seenivasan",b:["Kovilpatti","Ramnad","Ramnad-2","Paramakudi","Sayalkudi-1","Villathikullam","Sattur-2","Sankarankovil-1","Kayathar-1"]},
+{code:"Tirunelveli",agm:"John",b:["Tirunelveli-1","Valliyur-1","Ambasamudram-1","Anjugramam-1","Kalakadu-1"]},
+{code:"Tuticorin",agm:"Siva",b:["Tuticorin-1","Tuticorin-2","Thiruchendur-1","Thisayanvilai-1","Eral-2","Udankudi"]},
+{code:"TKS1",agm:"Muthuselvam",b:["Thenkasi","Thenkasi-2","Surandai-1","Puliyankudi-1","Sengottai-1","Rajapalayam"]},
+{code:"NGR1",agm:"Jeeva",b:["Nagercoil","Marthandam","Thuckalay-1","Colachel-1","Kulasekharam-1","Monday Market","Karungal-1"]}];
+const NAMES=DEF.map(x=>x[0]);
+const commit={},sales={};
+DEF.forEach(([n,c])=>{commit[n]=c;sales[n]=0});
+const COMP={zopper:"Zopper",onsitego:"OnsiteGO",lg:"LG",haier:"Haier"};
+const KEY="ewcs_v2";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Math.round(n||0).toLocaleString("en-IN");
+const pctOf=(s,c)=>c?s/c*100:0;
+const today=()=>{const p=(cfg.date||"").split("-");if(p.length===3)return p[2]+"/"+p[1]+"/"+p[0];const d=new Date();return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear()};
+const fileSafe=s=>s.replace(/[\\/:*?"<>|\[\]]/g,"-").trim();
+let cfg={mode:"zopper",txt:"",label:"Commitment",sort:"name"};
+
+/* persistence */
+function save(){try{localStorage.setItem(KEY,JSON.stringify({cfg,commit,on:today()}))}catch(e){}}
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(!r)return;
+  Object.assign(cfg,r.cfg||{});NAMES.forEach(n=>{if(typeof r.commit?.[n]==="number")commit[n]=r.commit[n]});}catch(e){}}
+load();
+const nowISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+cfg.date=nowISO();
+$("dSel").onclick=()=>{cfg.addDate=!cfg.addDate;renderHeading();save()};
+
+/* heading */
+function heading(){
+  const t=cfg.txt.trim();
+  if(cfg.mode==="custom")return t||"Commitment vs Sales";
+  if(cfg.mode==="template")return (t||"Company")+" EW Commitment vs Sales";
+  return COMP[cfg.mode]+" EW Commitment vs Sales";
+}
+function renderHeading(){
+  $("hSel").value=cfg.mode;$("hTxt").value=cfg.txt;
+  const custom=cfg.mode==="custom"||cfg.mode==="template";
+  $("hTxt").hidden=!custom;
+  $("hTxt").placeholder=cfg.mode==="template"?"Company name":"Type full heading";
+  const h=heading(),t=$("title");
+  const first=cfg.mode==="custom"?null:(cfg.mode==="template"?(cfg.txt.trim()||"Company"):COMP[cfg.mode]);
+  if(first){t.innerHTML="<em>"+esc(first)+"</em> EW Commitment vs Sales"}else t.textContent=h;
+  document.title=h;
+  if(cfg.addDate)t.insertAdjacentText("beforeend"," "+today());
+  $("dSel").textContent=today();$("dSel").classList.toggle("p",!!cfg.addDate);
+}
+$("hSel").onchange=e=>{cfg.mode=e.target.value;renderHeading();save();if(!$("hTxt").hidden)$("hTxt").focus()};
+$("hTxt").oninput=e=>{cfg.txt=e.target.value;renderHeading();save()};
+
+/* theme */
+$("btnTheme").onclick=()=>{const r=document.documentElement,dark=getComputedStyle(r).colorScheme==="dark";r.dataset.theme=dark?"light":"dark"};
+
+/* label (Commitment/Target) */
+function renderLabel(){
+  document.querySelectorAll(".L").forEach(e=>{const cap=e.tagName==="TH"||e.closest("h2");e.textContent=cap?cfg.label:cfg.label.toLowerCase()});
+  document.querySelectorAll("#lblSeg button").forEach(b=>b.classList.toggle("on",b.dataset.v===cfg.label));
+  const k=document.querySelector("#kpis .kl");if(k)k.textContent="Total "+cfg.label;
+}
+$("lblSeg").onclick=e=>{const v=e.target.dataset?.v;if(!v)return;cfg.label=v;renderLabel();save()};
+
+/* matching */
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+function lev(a,b){const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j-1],d[i-1][j],d[i][j-1]);return d[m][n]}
+const digits=s=>(s.match(/\d+/g)||[]).join(",");
+function match(raw){
+  const t=norm(raw);if(!t)return{name:null,score:0};
+  let best=null,bs=-1;
+  for(const n of NAMES){const k=norm(n);let s;
+    if(k===t)s=1;else{s=1-lev(t,k)/Math.max(t.length,k.length,1);if(digits(t)!==digits(k))s-=0.25}
+    if(s>bs){bs=s;best=n}}
+  return{name:best,score:Math.max(0,bs)};
+}
+
+/* excel reading */
+async function readRows(file){const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:""})}
+const num=v=>parseFloat(String(v).replace(/[,₹\s]/g,""));
+const setSt=(id,msg,cls)=>{const e=$(id);e.className="st"+(cls?" "+cls:"");e.textContent=msg};
+
+/* step 1: commitment upload */
+$("fCommit").onchange=async e=>{
+  const cFile=e.target.files[0];if(!cFile)return;
+  try{
+    setSt("sCommit","Reading…");
+    const rows=await readRows(cFile);let h=-1,bc=-1,cc=-1;
+    for(let i=0;i<rows.length&&h<0;i++){const r=rows[i].map(v=>String(v).toLowerCase());
+      const b=r.findIndex(v=>v.includes("branch")),c=r.findIndex(v=>v.includes("commit")||v.includes("target"));
+      if(b>=0&&c>=0){h=i;bc=b;cc=c}}
+    if(h<0)throw new Error("No Branch + Commitment/Target header found");
+    let ok=0;const skip=[];
+    for(let i=h+1;i<rows.length;i++){
+      const nm=String(rows[i][bc]||"").trim();if(!nm)continue;
+      if(/^(grand\s*)?total$|^region$/i.test(nm))break;
+      const v=num(rows[i][cc]);if(isNaN(v))continue;
+      const m=match(nm);
+      if(m.name&&m.score>0.6){commit[m.name]=v;ok++}else skip.push(nm);
+    }
+    save();renderMain();
+    setSt("sCommit","Updated "+ok+" branch(es)."+(skip.length?" Skipped: "+skip.join(", "):""),"ok");
+  }catch(err){setSt("sCommit","Failed: "+err.message,"err")}finally{e.target.value=""}
+};
+
+/* step 2: sales upload */
+let ex=[];
+$("fSales").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    setSt("sSales","Reading…");
+    const rows=await readRows(f);let h=-1,bc=-1,pc=-1;
+    for(let i=0;i<rows.length&&h<0;i++){const r=rows[i].map(v=>String(v).toLowerCase().trim());
+      const b=r.findIndex(v=>v.includes("branch"));if(b<0)continue;
+      let p=r.findIndex(v=>v.includes("sales price"));
+      if(p<0)p=r.findIndex(v=>v.includes("price"));
+      if(p<0)p=r.findIndex(v=>/sale|amount/.test(v)&&!/qty|quant|count/.test(v));
+      if(p>=0){h=i;bc=b;pc=p}}
+    if(h<0)throw new Error("No Branch + Sales Price columns found");
+    const sums=new Map();
+    for(let i=h+1;i<rows.length;i++){
+      const nm=String(rows[i][bc]||"").trim();if(!nm||/^(grand\s*)?totals?$/i.test(nm))continue;
+      const p=num(rows[i][pc]);if(isNaN(p))continue;sums.set(nm,(sums.get(nm)||0)+p)}
+    ex=[...sums].map(([raw,p])=>{const m=match(raw);return{raw,price:Math.round(p*100)/100,m:m.score>0.6?m.name:null,score:m.score}});
+    if(!ex.length)throw new Error("No branch rows under header");
+    renderReview();$("review").hidden=false;setSt("sApply","");
+    setSt("sSales","Read "+ex.length+" branch(es) from "+f.name,"ok");
+    $("review").scrollIntoView({behavior:"smooth",block:"start"});
+  }catch(err){setSt("sSales","Failed: "+err.message,"err")}
+  finally{e.target.value=""}
+};
+function renderReview(){
+  $("rv").innerHTML=ex.map((r,i)=>{
+    const cls=r.score>0.85?"g":r.score>0.6?"m":"l";
+    return "<tr><td>"+esc(r.raw)+"</td><td><select data-i='"+i+"' data-f='m'><option value=''>— skip —</option>"+
+      NAMES.map(n=>"<option value=\""+esc(n)+"\""+(n===r.m?" selected":"")+">"+esc(n)+"</option>").join("")+"</select></td>"+
+      "<td><span class='pill "+cls+"'>"+Math.round(r.score*100)+"%</span></td>"+
+      "<td><input class='c' type='number' step='0.01' data-i='"+i+"' data-f='p' value='"+r.price+"'></td>"+
+      "<td><button class='btn s' data-i='"+i+"' data-f='x'>Remove</button></td></tr>"}).join("");
+}
+$("rv").addEventListener("change",e=>{const t=e.target,i=+t.dataset.i;if(t.dataset.f==="m")ex[i].m=t.value||null});
+$("rv").addEventListener("input",e=>{const t=e.target,i=+t.dataset.i;if(t.dataset.f==="p")ex[i].price=parseFloat(t.value)||0});
+$("rv").addEventListener("click",e=>{const t=e.target;if(t.dataset.f==="x"){ex.splice(+t.dataset.i,1);renderReview()}});
+$("bApply").onclick=()=>{
+  const acc={};let skipped=0;
+  ex.forEach(r=>{if(r.m&&NAMES.includes(r.m))acc[r.m]=(acc[r.m]||0)+r.price;else skipped++});
+  Object.entries(acc).forEach(([n,v])=>sales[n]=v);
+  renderMain();setSt("sApply","Applied to "+Object.keys(acc).length+" branch(es)"+(skipped?", skipped "+skipped:""),"ok");
+};
+
+/* step 3: main table */
+const pill=p=>"<span class='pill "+(p>=100?"g":p>=60?"m":"l")+"'>"+p.toFixed(2)+"%</span>";
+function order(){
+  const a=NAMES.slice();
+  if(cfg.sort==="ach")a.sort((x,y)=>pctOf(sales[y],commit[y])-pctOf(sales[x],commit[x]));
+  else if(cfg.sort==="sales")a.sort((x,y)=>sales[y]-sales[x]);
+  else a.sort((x,y)=>x.localeCompare(y));
+  return a;
+}
+function renderMain(){
+  $("sort").value=cfg.sort;
+  $("main").innerHTML=order().map(n=>"<tr data-b=\""+esc(n)+"\"><td>"+esc(n)+"</td>"+
+    "<td><input class='c' type='number' min='0' step='1' value='"+commit[n]+"' data-b=\""+esc(n)+"\" data-f='c'></td>"+
+    "<td><input class='c' type='number' min='0' step='0.01' value='"+sales[n]+"' data-b=\""+esc(n)+"\" data-f='s'></td>"+
+    "<td class='ach'></td></tr>").join("");
+  update();
+}
+$("main").addEventListener("input",e=>{
+  const t=e.target,b=t.dataset.b;if(!b)return;
+  const v=parseFloat(t.value)||0;
+  if(t.dataset.f==="c"){commit[b]=v;save()}else sales[b]=v;
+  update();
+});
+function update(){
+  let tc=0,ts=0,rep=0;
+  document.querySelectorAll("#main tr").forEach(tr=>{
+    const n=tr.dataset.b,c=commit[n],s=sales[n];tc+=c;ts+=s;if(s>0)rep++;
+    tr.querySelector(".ach").innerHTML=pill(pctOf(s,c));
+  });
+  const tp=pctOf(ts,tc);
+  $("mainT").innerHTML="<td>Total</td><td class='n'>"+fmt(tc)+"</td><td class='n'>"+fmt(ts)+"</td><td>"+pill(tp)+"</td>";
+  $("kpis").innerHTML=
+    "<div class='kpi'><small class='kl'>Total "+cfg.label+"</small><b>"+fmt(tc)+"</b></div>"+
+    "<div class='kpi'><small>Total sales</small><b style='color:var(--ac)'>"+fmt(ts)+"</b></div>"+
+    "<div class='kpi'><small>Achievement</small><b>"+tp.toFixed(2)+"%</b><div class='bar'><i style='width:"+Math.min(100,tp)+"%'></i></div></div>"+
+    "<div class='kpi'><small>Branches reporting</small><b>"+rep+" / "+NAMES.length+"</b></div>";
+  renderRegion();
+}
+function regionData(){
+  return REGIONS.map(r=>{let t=0,s=0;r.b.forEach(b=>{t+=commit[b];s+=sales[b]});return{r,t,s,p:pctOf(s,t)}}).sort((a,b)=>b.p-a.p);
+}
+function renderRegion(){
+  const d=regionData();let gt=0,gs=0;
+  $("reg").innerHTML=d.map(x=>{gt+=x.t;gs+=x.s;
+    return "<tr><td><b>"+esc(x.r.code)+"</b></td><td>"+esc(x.r.agm)+"</td><td class='n'>"+fmt(x.t)+"</td><td class='n'>"+fmt(x.s)+"</td><td>"+pill(x.p)+"</td></tr>"}).join("");
+  $("regT").innerHTML="<td>Total</td><td></td><td class='n'>"+fmt(gt)+"</td><td class='n'>"+fmt(gs)+"</td><td>"+pill(pctOf(gs,gt))+"</td>";
+}
+$("sort").onchange=e=>{cfg.sort=e.target.value;save();renderMain()};
+$("bRC").onclick=()=>{DEF.forEach(([n,c])=>commit[n]=c);save();renderMain()};
+$("bRS").onclick=()=>{NAMES.forEach(n=>sales[n]=0);renderMain()};
+
+/* download */
+$("bDl").onclick=()=>{
+  try{
+    if(typeof XLSX==="undefined")throw new Error("Excel library failed to load (check internet)");
+    const L=cfg.label,ws={},ref=(r,c)=>XLSX.utils.encode_cell({r:r-1,c:c-1});
+    const TH={style:"thin",color:{rgb:"000000"}},BD={top:TH,bottom:TH,left:TH,right:TH},GREY="D9D9D9",ctr={horizontal:"center",vertical:"center"};
+    const S_T={font:{bold:true,sz:14},alignment:ctr};
+    const S_H={font:{bold:true,color:{rgb:"000000"}},fill:{fgColor:{rgb:GREY}},alignment:ctr,border:BD};
+    const S_C={border:BD,alignment:ctr};
+    const S_OK={border:BD,alignment:ctr,font:{color:{rgb:"000000"}}};
+    const S_LOW={border:BD,alignment:ctr,font:{color:{rgb:"FF0000"},bold:true}};
+    const set=(r,c,v,o={})=>{ws[ref(r,c)]={v,t:typeof v==="number"?"n":"s",...(o.f?{f:o.f}:{}),...(o.z?{z:o.z}:{}),s:o.s}};
+    set(1,1,heading()+(cfg.addDate?" "+today():""),{s:S_T});
+    ["Branch",L,"Sales","Ach%"].forEach((h,i)=>set(2,i+1,h,{s:S_H}));
+    const tc=NAMES.reduce((a,n)=>a+commit[n],0),ts=NAMES.reduce((a,n)=>a+sales[n],0),tp=tc?ts/tc:0;
+    const rowsB=NAMES.map(n=>({n,c:commit[n],s:sales[n],p:commit[n]?sales[n]/commit[n]:0})).sort((a,b)=>b.p-a.p);
+    const s0=3,s1=s0+NAMES.length-1;
+    rowsB.forEach((x,i)=>{const r=s0+i;
+      set(r,1,x.n,{s:S_C});set(r,2,x.c,{z:"#,##0",s:S_C});set(r,3,x.s,{z:"#,##0",s:S_C});
+      set(r,4,x.p,{f:"IF(B"+r+"=0,0,C"+r+"/B"+r+")",z:"0.00%",s:x.p<tp?S_LOW:S_OK})});
+    const tr=s1+2;
+    set(tr,1,"Total",{s:S_H});set(tr,2,tc,{f:"SUM(B"+s0+":B"+s1+")",z:"#,##0",s:S_H});
+    set(tr,3,ts,{f:"SUM(C"+s0+":C"+s1+")",z:"#,##0",s:S_H});set(tr,4,tp,{f:"IF(B"+tr+"=0,0,C"+tr+"/B"+tr+")",z:"0.00%",s:S_H});
+    const rh=tr+2;
+    ["Region","Target","Sales","%"].forEach((h,i)=>set(rh,i+1,h,{s:S_H}));
+    const d=regionData(),gt=d.reduce((a,x)=>a+x.t,0),gs=d.reduce((a,x)=>a+x.s,0),gp=gt?gs/gt:0;
+    let rr=rh+1;const first=rr;
+    d.forEach(x=>{const list=x.r.b.map(b=>'"'+b+'"').join(",");
+      set(rr,1,x.r.code,{s:S_C});
+      set(rr,2,x.t,{f:"SUM(SUMIF($A$"+s0+":$A$"+s1+",{"+list+"},$B$"+s0+":$B$"+s1+"))",z:"#,##0",s:S_C});
+      set(rr,3,x.s,{f:"SUM(SUMIF($A$"+s0+":$A$"+s1+",{"+list+"},$C$"+s0+":$C$"+s1+"))",z:"#,##0",s:S_C});
+      set(rr,4,x.p/100,{f:"IF(B"+rr+"=0,0,C"+rr+"/B"+rr+")",z:"0.00%",s:x.p/100<gp?S_LOW:S_OK});rr++});
+    const last=rr-1,gr=rr+1;
+    set(gr,1,"Total",{s:S_H});set(gr,2,gt,{f:"SUM(B"+first+":B"+last+")",z:"#,##0",s:S_H});
+    set(gr,3,gs,{f:"SUM(C"+first+":C"+last+")",z:"#,##0",s:S_H});set(gr,4,gp,{f:"IF(B"+gr+"=0,0,C"+gr+"/B"+gr+")",z:"0.00%",s:S_H});
+    ws["!ref"]=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:gr-1,c:3}});
+    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:3}}];
+    ws["!cols"]=[{wch:20},{wch:13},{wch:13},{wch:10}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,fileSafe(heading()).slice(0,31)||"Sheet1");
+    XLSX.writeFile(wb,fileSafe(heading()).replace(/\s+/g,"_")+"_"+today().replace(/\//g,"-")+".xlsx");
+    setSt("sDl","Downloaded","ok");
+  }catch(err){setSt("sDl","Failed: "+err.message,"err")}
+};
+
+renderHeading();renderMain();renderLabel();
+</script>
+</body>
+</html>
